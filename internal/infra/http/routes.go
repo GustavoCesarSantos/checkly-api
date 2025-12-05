@@ -16,8 +16,9 @@ func routes(mux *http.ServeMux, sqlDB *sql.DB) http.Handler {
 	urlRepository := db.NewUrlRepository(sqlDB)
 
 	checkUrl := application.NewCheckUrl()
+	saveUrl := application.NewSaveUrl(urlRepository)
 	
-	createUrl := urls.NewCreateUrl(*checkUrl, urlRepository)
+	createUrl := urls.NewCreateUrl(checkUrl, saveUrl)
 	healthcheck := monitor.NewHealthcheck()
 
 	mux.Handle("GET /v1/health", http.HandlerFunc(healthcheck.Handle))

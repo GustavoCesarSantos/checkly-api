@@ -2,23 +2,23 @@ package urls
 
 import (
 	"net/http"
+	"time"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
-	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
-	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
+	utils_urls "GustavoCesarSantos/checkly-api/internal/modules/urls/utils"
 	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 )
 
 type CreateUrl struct {
-	checkUrl application.CheckUrl
-	urlRepository db.IUrlRepository
+	checkUrl *application.CheckUrl
+	saveUrl *application.SaveUrl
 }
 
-func NewCreateUrl(checkUrl application.CheckUrl, urlRepository db.IUrlRepository) *CreateUrl {
+func NewCreateUrl(checkUrl *application.CheckUrl, saveUrl *application.SaveUrl) *CreateUrl {
 	return &CreateUrl{
 		checkUrl,
-		urlRepository,
+		saveUrl,
 	}
 }
 
@@ -43,20 +43,17 @@ func (cu *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
 		return
 	}
+	status := utils_urls.StatusHealthy
+	nextCheck := time.Now().Add(time.Duration(input.Interval) * time.Minute)
 	if(!checkResult.IsSuccess) {
-		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
-		return
+		status = utils_urls.StatusDegraded
+		nextCheck = time.Now().Add(time.Minute)
 	}
-	url := domain.NewUrl(
-		0, 
-		input.Url, 
-		input.Interval, 
-		input.RetryLimit, 
-		input.Contact,
-	)
-	saveErr := cu.urlRepository.Save(url)
+	input.Status = &status
+	input.NextCheck = &nextCheck
+	url, saveErr := cu.saveUrl.Execute(input)
 	if saveErr != nil {
-		utils.ServerErrorResponse(w, r, readErr, metadataErr)
+		utils.ServerErrorResponse(w, r, saveErr, metadataErr)
 		return
 	}
 	response := dtos.NewCreateUrlResponse(url.ID)

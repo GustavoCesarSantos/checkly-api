@@ -1,10 +1,17 @@
 package dtos
 
+import (
+	utils_urls "GustavoCesarSantos/checkly-api/internal/modules/urls/utils"
+	"time"
+)
+
 type CreateUrlRequest struct {
 	Url string `json:"url" example:"ahttps://api.meuservico.com/health"`
 	Interval int `json:"interval_minutes" example:"5"`
 	RetryLimit int `json:"retry_limit" example:"3"`
 	Contact string `json:"contact_email" example:"meu_contato@email.com"`
+	Status *utils_urls.UrlStatus  `json:"status"`
+	NextCheck *time.Time `json:"next_check"`
 }
 
 type CreateUrlResponse struct {
