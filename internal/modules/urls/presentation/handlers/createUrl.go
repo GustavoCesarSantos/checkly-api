@@ -2,11 +2,9 @@ package urls
 
 import (
 	"net/http"
-	"time"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
-	utils_urls "GustavoCesarSantos/checkly-api/internal/modules/urls/utils"
 	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 )
 
@@ -43,15 +41,7 @@ func (cu *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
 		return
 	}
-	status := utils_urls.StatusHealthy
-	nextCheck := time.Now().Add(time.Duration(input.Interval) * time.Minute)
-	if(!checkResult.IsSuccess) {
-		status = utils_urls.StatusDegraded
-		nextCheck = time.Now().Add(time.Minute)
-	}
-	input.Status = &status
-	input.NextCheck = &nextCheck
-	url, saveErr := cu.saveUrl.Execute(input)
+	url, saveErr := cu.saveUrl.Execute(input, checkResult.IsSuccess)
 	if saveErr != nil {
 		utils.ServerErrorResponse(w, r, saveErr, metadataErr)
 		return

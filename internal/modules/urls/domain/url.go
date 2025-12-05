@@ -1,8 +1,17 @@
 package domain
 
 import (
-	utils_urls "GustavoCesarSantos/checkly-api/internal/modules/urls/utils"
 	"time"
+)
+
+type UrlStatus int
+
+const (
+    StatusHealthy  UrlStatus = 10
+    StatusDegraded UrlStatus = 20
+    StatusRecovering UrlStatus = 25
+    StatusDown     UrlStatus = 30
+    StatusNotified UrlStatus = 40
 )
 
 type Url struct {
@@ -14,7 +23,7 @@ type Url struct {
     StabilityCount int
 	Contact string
     NextCheck *time.Time
-    Status utils_urls.UrlStatus
+    Status UrlStatus
     CreatedAt time.Time
     UpdatedAt *time.Time
 }
@@ -24,7 +33,7 @@ func NewUrl(
 	interval int,
     retryLimit int,
 	contact string,
-    status utils_urls.UrlStatus,
+    status UrlStatus,
     nextCheck time.Time,
 ) *Url {
     return &Url{
