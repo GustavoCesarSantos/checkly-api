@@ -21,6 +21,7 @@ func NewUrlRepository(db *sql.DB) db.IUrlRepository {
 func (ur *urlRepository) Save(url *domain.Url) error {
 	query := `
         INSERT INTO urls (
+            url,
             interval,
             retry_limit,
             contact
@@ -28,13 +29,15 @@ func (ur *urlRepository) Save(url *domain.Url) error {
         VALUES (
             $1,
             $2,
-            $3
+            $3,
+            $4
         )
         RETURNING
             id,
 			created_at
     `
     args := []any{
+        url.Url,
         url.Interval,
 		url.RetryLimit,
 		url.Contact,

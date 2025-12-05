@@ -6,6 +6,7 @@ import (
 
 	"GustavoCesarSantos/checkly-api/internal/infra/http/middleware"
 	monitor "GustavoCesarSantos/checkly-api/internal/modules/monitor/presentation/handlers"
+	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/nativeSQL"
 	urls "GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/handlers"
 )
@@ -13,8 +14,10 @@ import (
 
 func routes(mux *http.ServeMux, sqlDB *sql.DB) http.Handler {
 	urlRepository := db.NewUrlRepository(sqlDB)
+
+	checkUrl := application.NewCheckUrl()
 	
-	createUrl := urls.NewCreateUrl(urlRepository)
+	createUrl := urls.NewCreateUrl(*checkUrl, urlRepository)
 	healthcheck := monitor.NewHealthcheck()
 
 	mux.Handle("GET /v1/health", http.HandlerFunc(healthcheck.Handle))

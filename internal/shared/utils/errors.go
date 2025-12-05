@@ -13,6 +13,7 @@ var (
 	ErrInvalidLimitQueryParam = errors.New("INVALID LAST ID QUERY PARAM")
 	ErrEditConflict = errors.New("EDIT CONFLICT")
 	ErrRecordNotFound = errors.New("RECORD NOT FOUND")
+	ErrFailedCheckUrl = errors.New("FAILED TO CHECK URL")
 )
 
 type ErrorEnvelope struct {

@@ -3,6 +3,7 @@ package urls
 import (
 	"net/http"
 
+	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
@@ -10,11 +11,13 @@ import (
 )
 
 type CreateUrl struct {
+	checkUrl application.CheckUrl
 	urlRepository db.IUrlRepository
 }
 
-func NewCreateUrl(urlRepository db.IUrlRepository) *CreateUrl {
+func NewCreateUrl(checkUrl application.CheckUrl, urlRepository db.IUrlRepository) *CreateUrl {
 	return &CreateUrl{
+		checkUrl,
 		urlRepository,
 	}
 }
@@ -35,7 +38,22 @@ func (cu *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		utils.BadRequestResponse(w, r, readErr, metadataErr)
 		return
 	}
-	url := domain.NewUrl(0, int64(input.Interval), int64(input.RetryLimit), input.Contact)
+	checkResult, checkErr := cu.checkUrl.Execute(input.Url)
+	if(checkErr != nil) {
+		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
+		return
+	}
+	if(!checkResult.IsSuccess) {
+		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
+		return
+	}
+	url := domain.NewUrl(
+		0, 
+		input.Url, 
+		input.Interval, 
+		input.RetryLimit, 
+		input.Contact,
+	)
 	saveErr := cu.urlRepository.Save(url)
 	if saveErr != nil {
 		utils.ServerErrorResponse(w, r, readErr, metadataErr)
