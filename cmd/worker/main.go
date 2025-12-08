@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"GustavoCesarSantos/checkly-api/internal/infra/database"
-	http "GustavoCesarSantos/checkly-api/internal/infra/http"
+	"GustavoCesarSantos/checkly-api/internal/infra/worker"
 
 	"github.com/joho/godotenv"
 )
@@ -23,10 +26,9 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	slog.Info("[API] Database connection pool established")
-	err := http.Server(db)
-	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
-	}
+	slog.Info("[WORKER] Database connection pool established")
+	w := worker.NewWorker(db, 5)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+	w.Start(ctx)
 }

@@ -16,7 +16,7 @@ const (
 
 type Url struct {
     ID int64
-    Url string
+    Address string
 	Interval int
     RetryLimit int
     RetryCount int
@@ -29,7 +29,7 @@ type Url struct {
 }
 
 func NewUrl(
-    url string,
+    address string,
 	interval int,
     retryLimit int,
 	contact string,
@@ -37,7 +37,7 @@ func NewUrl(
     nextCheck time.Time,
 ) *Url {
     return &Url{
-        Url: url,
+        Address: address,
 		Interval: interval,
         RetryLimit: retryLimit,
         Contact: contact,

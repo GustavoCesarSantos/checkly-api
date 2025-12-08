@@ -1,6 +1,10 @@
 package application
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+	"time"
+)
 
 type CheckUrl struct {}
 
@@ -14,7 +18,10 @@ type CheckUrlResult struct {
 }
 
 func (cu *CheckUrl) Execute(url string) (CheckUrlResult, error) {
-	resp, err := http.Get(url)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return CheckUrlResult{}, err
 	}

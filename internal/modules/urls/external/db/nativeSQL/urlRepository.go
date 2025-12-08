@@ -22,13 +22,59 @@ func NewUrlRepository(db *sql.DB) db.IUrlRepository {
 	}
 }
 
-func (ur *urlRepository) Save(url *domain.Url) error {
-	query := `
-        INSERT INTO urls (
-            url,
+func (ur *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.Time) ([]domain.Url, error) {
+    query := `
+        SELECT
+            id,
+            address,
             interval,
             retry_limit,
             retry_count,
+            stability_count,
+            contact,
+            next_check,
+            status
+        FROM
+            urls
+        WHERE
+            next_check <= $1;
+    `
+	rows, err := ur.DB.QueryContext(ctx, query, nextCheck)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    urls := []domain.Url{}
+    for rows.Next() {
+        var url domain.Url
+        err := rows.Scan(
+            &url.ID,
+            &url.Address,
+            &url.Interval,
+            &url.RetryLimit,
+            &url.RetryCount,
+            &url.StabilityCount,
+            &url.Contact,
+            &url.NextCheck,
+            &url.Status,
+        )
+        if err != nil {
+            return nil, err
+        }
+        urls = append(urls, url)
+    }
+    if rowsErr := rows.Err(); rowsErr != nil {
+        return nil, rowsErr
+    }
+    return urls, nil
+}
+
+func (ur *urlRepository) Save(url *domain.Url) error {
+	query := `
+        INSERT INTO urls (
+            address,
+            interval,
+            retry_limit,
             contact,
             status,
             next_check
@@ -39,18 +85,16 @@ func (ur *urlRepository) Save(url *domain.Url) error {
             $3,
             $4,
             $5,
-            $6,
-            $7
+            $6
         )
         RETURNING
             id,
 			created_at
     `
     args := []any{
-        url.Url,
+        url.Address,
         url.Interval,
 		url.RetryLimit,
-		url.RetryCount,
         url.Contact,
         url.Status,
         url.NextCheck,
@@ -63,8 +107,12 @@ func (ur *urlRepository) Save(url *domain.Url) error {
     )
 }
 
-func (ur *urlRepository) Update(urlId int64, params db.UpdateUrlParams) error {
-    if params.NextCheck == nil && params.RetryCount == nil {
+func (ur *urlRepository) Update(ctx context.Context, urlId int64, params db.UpdateUrlParams) error {
+    if 
+        params.NextCheck == nil && 
+        params.RetryCount == nil && 
+        params.StabilityCount == nil && 
+        params.Status == nil {
 		return errors.New("NO COLUMN FIELD PROVIDED FOR UPDATING")
 	}
     query := "UPDATE urls SET"
@@ -80,11 +128,19 @@ func (ur *urlRepository) Update(urlId int64, params db.UpdateUrlParams) error {
 		args = append(args, *params.RetryCount)
 		argPos++
 	}
+	if params.StabilityCount != nil {
+		query += " stability_count = $" + strconv.Itoa(argPos) + ","
+		args = append(args, *params.StabilityCount)
+		argPos++
+	}
+	if params.Status != nil {
+		query += " status = $" + strconv.Itoa(argPos) + ","
+		args = append(args, *params.Status)
+		argPos++
+	}
     query += " updated_at = NOW()"
     query = strings.TrimSuffix(query, ",") + " WHERE id = $" + strconv.Itoa(argPos)
 	args = append(args, urlId)
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 	result, err := ur.DB.ExecContext(ctx, query, args...)
     if err != nil {
         return err

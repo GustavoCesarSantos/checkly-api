@@ -22,10 +22,10 @@ func (su *SaveUrl) Execute(input dtos.CreateUrlRequest, isHealthy bool) (*domain
 	nextCheck := time.Now().Add(time.Duration(input.Interval) * time.Minute)
 	if(!isHealthy) {
 		status = domain.StatusDegraded
-		nextCheck = time.Now().Add(time.Minute)
+		nextCheck = time.Now().Add(1 * time.Minute)
 	}
 	url := domain.NewUrl(
-		input.Url, 
+		input.Address, 
 		input.Interval, 
 		input.RetryLimit, 
 		input.Contact,

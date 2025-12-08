@@ -6,7 +6,7 @@ import (
 )
 
 type CreateUrlRequest struct {
-	Url string `json:"url" example:"ahttps://api.meuservico.com/health"`
+	Address string `json:"address" example:"https://api.meuservico.com/health"`
 	Interval int `json:"interval_minutes" example:"5"`
 	RetryLimit int `json:"retry_limit" example:"3"`
 	Contact string `json:"contact_email" example:"meu_contato@email.com"`

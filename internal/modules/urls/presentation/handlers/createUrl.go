@@ -36,7 +36,7 @@ func (cu *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		utils.BadRequestResponse(w, r, readErr, metadataErr)
 		return
 	}
-	checkResult, checkErr := cu.checkUrl.Execute(input.Url)
+	checkResult, checkErr := cu.checkUrl.Execute(input.Address)
 	if(checkErr != nil) {
 		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
 		return
