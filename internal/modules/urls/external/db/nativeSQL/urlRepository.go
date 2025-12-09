@@ -37,7 +37,8 @@ func (ur *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.
         FROM
             urls
         WHERE
-            next_check <= $1;
+            next_check <= $1
+            AND status NOT IN (30, 40);
     `
 	rows, err := ur.DB.QueryContext(ctx, query, nextCheck)
     if err != nil {
