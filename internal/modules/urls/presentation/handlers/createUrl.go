@@ -46,7 +46,7 @@ func (cu *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		utils.ServerErrorResponse(w, r, saveErr, metadataErr)
 		return
 	}
-	response := dtos.NewCreateUrlResponse(url.ID)
+	response := dtos.NewCreateUrlResponse(url.ExternalID)
 	err := utils.WriteJSON(w, http.StatusCreated, utils.Envelope{"url": response}, nil)
 	if err != nil {
 		utils.ServerErrorResponse(w, r, err, metadataErr)

@@ -89,7 +89,7 @@ func (ur *urlRepository) Save(url *domain.Url) error {
             $6
         )
         RETURNING
-            id,
+            external_id,
 			created_at
     `
     args := []any{
@@ -103,7 +103,7 @@ func (ur *urlRepository) Save(url *domain.Url) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
     return ur.DB.QueryRowContext(ctx, query, args...).Scan(
-        &url.ID,
+        &url.ExternalID,
         &url.CreatedAt,
     )
 }

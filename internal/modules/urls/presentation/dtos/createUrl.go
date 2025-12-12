@@ -15,11 +15,11 @@ type CreateUrlRequest struct {
 }
 
 type CreateUrlResponse struct {
-	ID int64 `json:"id" example:"1"`
+	ID string `json:"id" example:"1"`
 }
 
-func NewCreateUrlResponse(id int64) *CreateUrlResponse {
+func NewCreateUrlResponse(externalId string) *CreateUrlResponse {
 	return &CreateUrlResponse{
-		ID: id,
+		ID: externalId,
 	}
 }

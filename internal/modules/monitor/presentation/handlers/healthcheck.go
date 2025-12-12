@@ -2,6 +2,7 @@ package monitor
 
 import (
 	"net/http"
+	"time"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/monitor/presentation/dtos"
 	"GustavoCesarSantos/checkly-api/internal/shared/configs"
@@ -25,7 +26,7 @@ func (hc *Healthcheck) Handle(w http.ResponseWriter, r *http.Request) {
 		"line": 0,
 	}
 	serverConfig := configs.LoadServerConfig()
-	response := dtos.NewHealthCheckResponse("available", serverConfig.Env)
+	response := dtos.NewHealthCheckResponse("available", serverConfig.Env, time.Now().UTC().Format(time.RFC3339))
 	err := utils.WriteJSON(w, http.StatusOK, utils.Envelope{"health_check": response}, nil)
 	if err != nil {
 		utils.ServerErrorResponse(w, r, err, metadataErr)

@@ -16,6 +16,7 @@ const (
 
 type Url struct {
     ID int64
+    ExternalID string
     Address string
 	Interval int
     RetryLimit int
