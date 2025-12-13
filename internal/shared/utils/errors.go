@@ -66,6 +66,10 @@ func NotFoundResponse(w http.ResponseWriter, r *http.Request, metadataErr Envelo
 	errorResponse(w, r, http.StatusNotFound, message, metadataErr)
 }
 
+func FailedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string, metadataErr Envelope) {
+	errorResponse(w, r, http.StatusUnprocessableEntity, errors, metadataErr)
+}
+
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error, metadataErr Envelope) {
 	logError(r, err, metadataErr)
 	message := "The server encountered a problem and could not process your request"

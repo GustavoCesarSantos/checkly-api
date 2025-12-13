@@ -19,7 +19,6 @@ type Worker struct {
 
 func NewWorker(sqlDB *sql.DB, concurrency int) *Worker {
 	repo := db.NewUrlRepository(sqlDB)
-
 	return &Worker{
 		interval:    1 * time.Minute,
 		concurrency: concurrency,
