@@ -24,7 +24,7 @@ type CreateUrlEnvelop struct {
 	CreateUrl dtos.CreateUrlResponse `json:"url"`
 }
 
-func (cu *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
+func (c *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 	metadataErr := utils.Envelope{
 		"file": "createUrl.go",
 		"func": "createUrl.Handle",
@@ -36,12 +36,12 @@ func (cu *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		utils.BadRequestResponse(w, r, readErr, metadataErr)
 		return
 	}
-	checkResult, checkErr := cu.checkUrl.Execute(input.Address)
+	checkResult, checkErr := c.checkUrl.Execute(input.Address)
 	if(checkErr != nil) {
 		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
 		return
 	}
-	url, saveErr := cu.saveUrl.Execute(input, checkResult.IsSuccess)
+	url, saveErr := c.saveUrl.Execute(input, checkResult.IsSuccess)
 	if saveErr != nil {
 		utils.ServerErrorResponse(w, r, saveErr, metadataErr)
 		return

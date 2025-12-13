@@ -22,7 +22,7 @@ func NewUrlRepository(db *sql.DB) db.IUrlRepository {
 	}
 }
 
-func (ur *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.Time) ([]domain.Url, error) {
+func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.Time) ([]domain.Url, error) {
     query := `
         SELECT
             id,
@@ -40,7 +40,7 @@ func (ur *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.
             next_check <= $1
             AND status NOT IN (30, 40);
     `
-	rows, err := ur.DB.QueryContext(ctx, query, nextCheck)
+	rows, err := u.DB.QueryContext(ctx, query, nextCheck)
     if err != nil {
         return nil, err
     }
@@ -70,7 +70,7 @@ func (ur *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.
     return urls, nil
 }
 
-func (ur *urlRepository) Save(url *domain.Url) error {
+func (u *urlRepository) Save(url *domain.Url) error {
 	query := `
         INSERT INTO urls (
             address,
@@ -102,13 +102,13 @@ func (ur *urlRepository) Save(url *domain.Url) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-    return ur.DB.QueryRowContext(ctx, query, args...).Scan(
+    return u.DB.QueryRowContext(ctx, query, args...).Scan(
         &url.ExternalID,
         &url.CreatedAt,
     )
 }
 
-func (ur *urlRepository) Update(ctx context.Context, urlId int64, params db.UpdateUrlParams) error {
+func (u *urlRepository) Update(ctx context.Context, urlId int64, params db.UpdateUrlParams) error {
     if 
         params.NextCheck == nil && 
         params.RetryCount == nil && 
@@ -142,7 +142,7 @@ func (ur *urlRepository) Update(ctx context.Context, urlId int64, params db.Upda
     query += " updated_at = NOW()"
     query = strings.TrimSuffix(query, ",") + " WHERE id = $" + strconv.Itoa(argPos)
 	args = append(args, urlId)
-	result, err := ur.DB.ExecContext(ctx, query, args...)
+	result, err := u.DB.ExecContext(ctx, query, args...)
     if err != nil {
         return err
     }

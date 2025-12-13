@@ -17,7 +17,7 @@ func NewSaveUrl(urlRepository db.IUrlRepository) *SaveUrl {
 	}
 }
 
-func (su *SaveUrl) Execute(input dtos.CreateUrlRequest, isHealthy bool) (*domain.Url, error) {
+func (s *SaveUrl) Execute(input dtos.CreateUrlRequest, isHealthy bool) (*domain.Url, error) {
 	status := domain.StatusHealthy
 	nextCheck := time.Now().Add(time.Duration(input.Interval) * time.Minute)
 	if(!isHealthy) {
@@ -32,7 +32,7 @@ func (su *SaveUrl) Execute(input dtos.CreateUrlRequest, isHealthy bool) (*domain
 		status,
 		nextCheck,
 	)
-	err := su.urlRepository.Save(url)
+	err := s.urlRepository.Save(url)
 	if(err != nil) {
 		return nil, err
 	}

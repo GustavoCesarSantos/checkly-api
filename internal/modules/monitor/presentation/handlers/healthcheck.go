@@ -19,7 +19,7 @@ type HealthCheckEnvelope struct {
 	HealthCheck dtos.HealthCheckResponse `json:"health_check"`
 }
 
-func (hc *Healthcheck) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *Healthcheck) Handle(w http.ResponseWriter, r *http.Request) {
 	metadataErr := utils.Envelope{
 		"file": "healthcheck.go",
 		"func": "healthcheck.Handle",

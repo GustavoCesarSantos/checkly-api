@@ -33,8 +33,8 @@ func NewMonitorUrls(
 	}
 }
 
-func (mu *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
-	urls, err := mu.urlRepository.FindAllByNextCheck(ctx, time.Now())
+func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
+	urls, err := m.urlRepository.FindAllByNextCheck(ctx, time.Now())
 	if err != nil {
 		return err
 	}
@@ -48,13 +48,13 @@ func (mu *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 	for i := range urls {
 		u := &urls[i]	
 		g.Go(func() error {
-			result, checkErr := mu.checkUrl.Execute(u.Address)
+			result, checkErr := m.checkUrl.Execute(u.Address)
 			if checkErr != nil {
 				slog.Warn("check failed", "url", u.Address, "error", checkErr)
 				return checkErr
 			}
-			mu.evaluateUrl.Execute(u, result.IsSuccess)
-			updateErr := mu.updateUrl.Execute(ctx, u.ID, dtos.UpdateUrlRequest{
+			m.evaluateUrl.Execute(u, result.IsSuccess)
+			updateErr := m.updateUrl.Execute(ctx, u.ID, dtos.UpdateUrlRequest{
 				NextCheck:      u.NextCheck,
 				RetryCount:     &u.RetryCount,
 				StabilityCount: &u.StabilityCount,

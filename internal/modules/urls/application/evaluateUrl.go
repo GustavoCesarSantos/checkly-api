@@ -11,7 +11,7 @@ func NewEvaluateUrl() *EvaluateUrl {
 	return &EvaluateUrl{}
 }
 
-func (eu *EvaluateUrl) Execute(url *domain.Url, httpOK bool) {
+func (e *EvaluateUrl) Execute(url *domain.Url, httpOK bool) {
 	switch {
 		case url.Status == domain.StatusHealthy && !httpOK:
 			url.Status = domain.StatusDegraded

@@ -17,7 +17,7 @@ type CheckUrlResult struct {
 	StatusCode int
 }
 
-func (cu *CheckUrl) Execute(url string) (CheckUrlResult, error) {
+func (c *CheckUrl) Execute(url string) (CheckUrlResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
