@@ -17,13 +17,13 @@ type urlRepository struct {
 }
 
 func NewUrlRepository(db *sql.DB) db.IUrlRepository {
-	return &urlRepository {
+	return &urlRepository{
 		DB: db,
 	}
 }
 
 func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.Time) ([]domain.Url, error) {
-    query := `
+	query := `
         SELECT
             id,
             address,
@@ -41,33 +41,33 @@ func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.T
             AND status NOT IN (30, 40);
     `
 	rows, err := u.DB.QueryContext(ctx, query, nextCheck)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
-    urls := []domain.Url{}
-    for rows.Next() {
-        var url domain.Url
-        err := rows.Scan(
-            &url.ID,
-            &url.Address,
-            &url.Interval,
-            &url.RetryLimit,
-            &url.RetryCount,
-            &url.StabilityCount,
-            &url.Contact,
-            &url.NextCheck,
-            &url.Status,
-        )
-        if err != nil {
-            return nil, err
-        }
-        urls = append(urls, url)
-    }
-    if rowsErr := rows.Err(); rowsErr != nil {
-        return nil, rowsErr
-    }
-    return urls, nil
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	urls := []domain.Url{}
+	for rows.Next() {
+		var url domain.Url
+		err := rows.Scan(
+			&url.ID,
+			&url.Address,
+			&url.Interval,
+			&url.RetryLimit,
+			&url.RetryCount,
+			&url.StabilityCount,
+			&url.Contact,
+			&url.NextCheck,
+			&url.Status,
+		)
+		if err != nil {
+			return nil, err
+		}
+		urls = append(urls, url)
+	}
+	if rowsErr := rows.Err(); rowsErr != nil {
+		return nil, rowsErr
+	}
+	return urls, nil
 }
 
 func (u *urlRepository) Save(url *domain.Url) error {
@@ -92,34 +92,33 @@ func (u *urlRepository) Save(url *domain.Url) error {
             external_id,
 			created_at
     `
-    args := []any{
-        url.Address,
-        url.Interval,
+	args := []any{
+		url.Address,
+		url.Interval,
 		url.RetryLimit,
-        url.Contact,
-        url.Status,
-        url.NextCheck,
+		url.Contact,
+		url.Status,
+		url.NextCheck,
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-    return u.DB.QueryRowContext(ctx, query, args...).Scan(
-        &url.ExternalID,
-        &url.CreatedAt,
-    )
+	return u.DB.QueryRowContext(ctx, query, args...).Scan(
+		&url.ExternalID,
+		&url.CreatedAt,
+	)
 }
 
 func (u *urlRepository) Update(ctx context.Context, urlId int64, params db.UpdateUrlParams) error {
-    if 
-        params.NextCheck == nil && 
-        params.RetryCount == nil && 
-        params.StabilityCount == nil && 
-        params.Status == nil {
+	if params.NextCheck == nil &&
+		params.RetryCount == nil &&
+		params.StabilityCount == nil &&
+		params.Status == nil {
 		return errors.New("NO COLUMN FIELD PROVIDED FOR UPDATING")
 	}
-    query := "UPDATE urls SET"
+	query := "UPDATE urls SET"
 	var args []interface{}
 	argPos := 1
-    if params.NextCheck != nil {
+	if params.NextCheck != nil {
 		query += " next_check = $" + strconv.Itoa(argPos) + ","
 		args = append(args, *params.NextCheck)
 		argPos++
@@ -139,19 +138,19 @@ func (u *urlRepository) Update(ctx context.Context, urlId int64, params db.Updat
 		args = append(args, *params.Status)
 		argPos++
 	}
-    query += " updated_at = NOW()"
-    query = strings.TrimSuffix(query, ",") + " WHERE id = $" + strconv.Itoa(argPos)
+	query += " updated_at = NOW()"
+	query = strings.TrimSuffix(query, ",") + " WHERE id = $" + strconv.Itoa(argPos)
 	args = append(args, urlId)
 	result, err := u.DB.ExecContext(ctx, query, args...)
-    if err != nil {
-        return err
-    }
-    rowsAffected, rowsAffectedErr := result.RowsAffected()
-    if rowsAffectedErr != nil {
-        return rowsAffectedErr
-    }
-    if rowsAffected == 0 {
-        return utils.ErrRecordNotFound
-    }
-    return nil
+	if err != nil {
+		return err
+	}
+	rowsAffected, rowsAffectedErr := result.RowsAffected()
+	if rowsAffectedErr != nil {
+		return rowsAffectedErr
+	}
+	if rowsAffected == 0 {
+		return utils.ErrRecordNotFound
+	}
+	return nil
 }

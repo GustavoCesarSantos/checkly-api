@@ -30,13 +30,13 @@ func Server(db *sql.DB) error {
 	port := serverConfigs.Port
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", port),
-		Handler:      routes,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		Addr:           fmt.Sprintf(":%d", port),
+		Handler:        routes,
+		IdleTimeout:    time.Minute,
+		ReadTimeout:    5 * time.Second,
+		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		ErrorLog:       slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 	shutdownError := make(chan error)
 	var wg sync.WaitGroup

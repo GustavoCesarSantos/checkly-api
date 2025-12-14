@@ -11,7 +11,7 @@ import (
 
 type CreateUrl struct {
 	checkUrl *application.CheckUrl
-	saveUrl *application.SaveUrl
+	saveUrl  *application.SaveUrl
 }
 
 func NewCreateUrl(checkUrl *application.CheckUrl, saveUrl *application.SaveUrl) *CreateUrl {
@@ -43,7 +43,7 @@ func (c *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	checkResult, checkErr := c.checkUrl.Execute(input.Address)
-	if(checkErr != nil) {
+	if checkErr != nil {
 		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
 		return
 	}

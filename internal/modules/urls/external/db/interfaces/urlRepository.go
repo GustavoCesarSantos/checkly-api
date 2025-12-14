@@ -7,10 +7,10 @@ import (
 )
 
 type UpdateUrlParams struct {
-	NextCheck *time.Time
-	RetryCount *int
+	NextCheck      *time.Time
+	RetryCount     *int
 	StabilityCount *int
-	Status *domain.UrlStatus
+	Status         *domain.UrlStatus
 }
 
 type IUrlRepository interface {

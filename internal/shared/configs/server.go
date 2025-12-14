@@ -20,7 +20,7 @@ type ServerConfig struct {
 
 func LoadServerConfig() ServerConfig {
 	port, portErr := strconv.Atoi(GetEnv("PORT", "9000"))
-	if(portErr != nil) {
+	if portErr != nil {
 		slog.Error(portErr.Error())
 		os.Exit(1)
 	}

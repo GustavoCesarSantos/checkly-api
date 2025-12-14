@@ -15,6 +15,7 @@ import (
 type MonitorUrls struct {
 	checkUrl      *application.CheckUrl
 	evaluateUrl   *application.EvaluateUrl
+	scheduleNextCheck *application.ScheduleNextCheck
 	updateUrl     *application.UpdateUrl
 	urlRepository db.IUrlRepository
 }
@@ -22,12 +23,14 @@ type MonitorUrls struct {
 func NewMonitorUrls(
 	checkUrl *application.CheckUrl,
 	evaluateUrl *application.EvaluateUrl,
+	scheduleNextCheck *application.ScheduleNextCheck,
 	updateUrl *application.UpdateUrl,
 	urlRepository db.IUrlRepository,
 ) *MonitorUrls {
 	return &MonitorUrls{
 		checkUrl:      checkUrl,
 		evaluateUrl:   evaluateUrl,
+		scheduleNextCheck: scheduleNextCheck,
 		updateUrl:     updateUrl,
 		urlRepository: urlRepository,
 	}
@@ -46,7 +49,7 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 	g, ctx := errgroup.WithContext(ctx)
 	g.SetLimit(concurrency)
 	for i := range urls {
-		u := &urls[i]	
+		u := &urls[i]
 		g.Go(func() error {
 			result, checkErr := m.checkUrl.Execute(u.Address)
 			if checkErr != nil {
@@ -54,6 +57,7 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 				return checkErr
 			}
 			m.evaluateUrl.Execute(u, result.IsSuccess)
+			m.scheduleNextCheck.Execute(u, result.IsSuccess, time.Now())
 			updateErr := m.updateUrl.Execute(ctx, u.ID, dtos.UpdateUrlRequest{
 				NextCheck:      u.NextCheck,
 				RetryCount:     &u.RetryCount,

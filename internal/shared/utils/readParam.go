@@ -11,7 +11,7 @@ func ReadParam(r *http.Request, paramName string) (string, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 	value := params.ByName(paramName)
 	if value == "" {
-	return "", errors.New("missing parameter: " + paramName)
+		return "", errors.New("missing parameter: " + paramName)
 	}
 	return value, nil
 }

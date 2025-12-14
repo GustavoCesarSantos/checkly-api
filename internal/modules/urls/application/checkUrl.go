@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-type CheckUrl struct {}
+type CheckUrl struct{}
 
 func NewCheckUrl() *CheckUrl {
 	return &CheckUrl{}
 }
 
 type CheckUrlResult struct {
-	IsSuccess bool
+	IsSuccess  bool
 	StatusCode int
 }
 
@@ -26,14 +26,14 @@ func (c *CheckUrl) Execute(url string) (CheckUrlResult, error) {
 		return CheckUrlResult{}, err
 	}
 	defer resp.Body.Close()
-	if(resp.StatusCode >= 400) {
+	if resp.StatusCode >= 400 {
 		return CheckUrlResult{
-			IsSuccess: false,
+			IsSuccess:  false,
 			StatusCode: resp.StatusCode,
 		}, nil
 	}
 	return CheckUrlResult{
-		IsSuccess: true,
+		IsSuccess:  true,
 		StatusCode: resp.StatusCode,
 	}, nil
 }

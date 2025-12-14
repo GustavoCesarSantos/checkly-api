@@ -9,10 +9,10 @@ import (
 	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 )
 
-type Healthcheck struct {}
+type Healthcheck struct{}
 
 func NewHealthcheck() *Healthcheck {
-    return &Healthcheck{}
+	return &Healthcheck{}
 }
 
 type HealthCheckEnvelope struct {

@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	ErrMissingJSONValue = errors.New("BODY MUST CONTAIN A JSON VALUE")
+	ErrMissingJSONValue                = errors.New("BODY MUST CONTAIN A JSON VALUE")
 	ErrMissingOrInvalidLimitQueryParam = errors.New("MISSING OR INVALID LIMIT QUERY PARAM")
-	ErrInvalidLimitQueryParam = errors.New("INVALID LAST ID QUERY PARAM")
-	ErrEditConflict = errors.New("EDIT CONFLICT")
-	ErrRecordNotFound = errors.New("RECORD NOT FOUND")
-	ErrFailedCheckUrl = errors.New("FAILED TO CHECK URL")
+	ErrInvalidLimitQueryParam          = errors.New("INVALID LAST ID QUERY PARAM")
+	ErrEditConflict                    = errors.New("EDIT CONFLICT")
+	ErrRecordNotFound                  = errors.New("RECORD NOT FOUND")
+	ErrFailedCheckUrl                  = errors.New("FAILED TO CHECK URL")
 )
 
 type ErrorEnvelope struct {
@@ -25,14 +25,14 @@ func logError(r *http.Request, err error, metadataErr Envelope) {
 		method = r.Method
 		url    = r.URL.RequestURI()
 	)
-    slog.Error(err.Error(), "method", method, "url", url, "meta", fmt.Sprintf("%s", metadataErr))
+	slog.Error(err.Error(), "method", method, "url", url, "meta", fmt.Sprintf("%s", metadataErr))
 }
 
 func errorResponse(w http.ResponseWriter, r *http.Request, status int, message any, metadataErr Envelope) {
 	data := Envelope{"error": message}
 	err := WriteJSON(w, status, data, nil)
 	if err != nil {
-        logError(r, err, metadataErr)
+		logError(r, err, metadataErr)
 		w.WriteHeader(500)
 	}
 }
@@ -42,7 +42,7 @@ func BadRequestResponse(w http.ResponseWriter, r *http.Request, err error, metad
 }
 
 func ForbiddenResponse(w http.ResponseWriter, r *http.Request, err error, metadataErr Envelope) {
-	message := "Forbidden Access" 
+	message := "Forbidden Access"
 	if err != nil {
 		message = err.Error()
 	}
@@ -51,7 +51,7 @@ func ForbiddenResponse(w http.ResponseWriter, r *http.Request, err error, metada
 }
 
 func InvalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request, metadataErr Envelope) {
-    w.Header().Set("WWW-Authenticate", "Bearer")
+	w.Header().Set("WWW-Authenticate", "Bearer")
 	message := "invalid or missing authentication token"
 	errorResponse(w, r, http.StatusUnauthorized, message, metadataErr)
 }

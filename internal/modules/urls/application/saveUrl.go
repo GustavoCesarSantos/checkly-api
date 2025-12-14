@@ -20,20 +20,20 @@ func NewSaveUrl(urlRepository db.IUrlRepository) *SaveUrl {
 func (s *SaveUrl) Execute(input dtos.CreateUrlRequest, isHealthy bool) (*domain.Url, error) {
 	status := domain.StatusHealthy
 	nextCheck := time.Now().Add(time.Duration(input.Interval) * time.Minute)
-	if(!isHealthy) {
+	if !isHealthy {
 		status = domain.StatusDegraded
 		nextCheck = time.Now().Add(1 * time.Minute)
 	}
 	url := domain.NewUrl(
-		input.Address, 
-		input.Interval, 
-		input.RetryLimit, 
+		input.Address,
+		input.Interval,
+		input.RetryLimit,
 		input.Contact,
 		status,
 		nextCheck,
 	)
 	err := s.urlRepository.Save(url)
-	if(err != nil) {
+	if err != nil {
 		return nil, err
 	}
 	return url, nil

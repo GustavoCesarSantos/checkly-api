@@ -10,8 +10,6 @@ import (
 	"GustavoCesarSantos/checkly-api/internal/shared/configs"
 )
 
-
-
 func OpenDB() (*sql.DB, error) {
 	var databaseConfig = configs.LoadDatabaseConfig()
 	db, err := sql.Open("postgres", databaseConfig.Dsn)

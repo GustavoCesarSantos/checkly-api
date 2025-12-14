@@ -18,13 +18,13 @@ func NewUpdateUrl(urlRepository db.IUrlRepository) *UpdateUrl {
 
 func (u *UpdateUrl) Execute(ctx context.Context, urlId int64, input dtos.UpdateUrlRequest) error {
 	params := db.UpdateUrlParams{
-		NextCheck: input.NextCheck,
-		RetryCount: input.RetryCount,
+		NextCheck:      input.NextCheck,
+		RetryCount:     input.RetryCount,
 		StabilityCount: input.StabilityCount,
-		Status:    input.Status,
+		Status:         input.Status,
 	}
 	err := u.urlRepository.Update(ctx, urlId, params)
-	if(err != nil) {
+	if err != nil {
 		return err
 	}
 	return nil

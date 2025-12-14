@@ -25,6 +25,7 @@ func NewWorker(sqlDB *sql.DB, concurrency int) *Worker {
 		monitor: urls.NewMonitorUrls(
 			application.NewCheckUrl(),
 			application.NewEvaluateUrl(),
+			application.NewScheduleNextCheck(),
 			application.NewUpdateUrl(repo),
 			repo,
 		),
