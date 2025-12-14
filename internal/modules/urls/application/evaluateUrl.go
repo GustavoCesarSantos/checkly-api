@@ -2,12 +2,41 @@ package application
 
 import "GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 
+// EvaluateUrl é responsável por aplicar a máquina de estados
+// de uma URL monitorada com base no resultado do último check HTTP.
+//
+// Este serviço avalia transições de estado como:
+// - Healthy -> Degraded
+// - Degraded -> Recovering
+// - Recovering -> Healthy
+// - Recovering -> Degraded
+// - Degraded -> Down
+//
+// Além do estado, ele também atualiza:
+// - RetryCount
+// - StabilityCount
+// - NextCheck
+//
+// Este serviço NÃO executa chamadas HTTP
+// e NÃO persiste alterações em banco.
 type EvaluateUrl struct{}
 
+// NewEvaluateUrl cria uma nova instância do serviço EvaluateUrl.
 func NewEvaluateUrl() *EvaluateUrl {
 	return &EvaluateUrl{}
 }
 
+
+// Execute avalia o estado atual da URL e o resultado do check HTTP,
+// aplicando as regras de transição de estado.
+//
+// Parâmetros:
+// - url: entidade de domínio que será modificada
+// - httpOK: indica se o último check HTTP foi bem-sucedido
+//
+// Observações:
+// - A função modifica a entidade recebida (efeito colateral esperado)
+// - O cálculo do NextCheck depende do estado final
 func (e *EvaluateUrl) Execute(url *domain.Url, httpOK bool) {
 	switch {
 	case url.Status == domain.StatusHealthy && !httpOK:
