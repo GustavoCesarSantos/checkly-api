@@ -1,0 +1,89 @@
+definitions:
+  domain.UrlStatus:
+    enum:
+    - 10
+    - 20
+    - 25
+    - 30
+    - 40
+    type: integer
+    x-enum-varnames:
+    - StatusHealthy
+    - StatusDegraded
+    - StatusRecovering
+    - StatusDown
+    - StatusNotified
+  dtos.CreateUrlRequest:
+    properties:
+      address:
+        example: https://api.meuservico.com/health
+        type: string
+      contact_email:
+        example: meu_contato@email.com
+        type: string
+      interval_minutes:
+        example: 5
+        type: integer
+      next_check:
+        type: string
+      retry_limit:
+        example: 3
+        type: integer
+      status:
+        $ref: '#/definitions/domain.UrlStatus'
+    type: object
+  dtos.CreateUrlResponse:
+    properties:
+      id:
+        example: "1"
+        type: string
+    type: object
+  urls.CreateUrlEnvelop:
+    properties:
+      url:
+        $ref: '#/definitions/dtos.CreateUrlResponse'
+    type: object
+  utils.ErrorEnvelope:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /urls:
+    post:
+      consumes:
+      - application/json
+      description: Create a new url for monitoring.
+      parameters:
+      - description: Create Url request
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateUrlRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Board successfully created
+          schema:
+            $ref: '#/definitions/urls.CreateUrlEnvelop'
+        "400":
+          description: Empty body request
+          schema:
+            $ref: '#/definitions/utils.ErrorEnvelope'
+        "402":
+          description: Invalid request (e.g., missing parameters or validation error)
+          schema:
+            $ref: '#/definitions/utils.ErrorEnvelope'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorEnvelope'
+      summary: Create a new url
+      tags:
+      - Url
+swagger: "2.0"

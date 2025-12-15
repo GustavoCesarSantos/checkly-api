@@ -25,8 +25,7 @@ func Server(db *sql.DB) error {
 		return loadEnvErr
 	}
 	serverConfigs := configs.LoadServerConfig()
-	mux := http.NewServeMux()
-	routes := routes(mux, db)
+	routes := routes(db)
 	port := serverConfigs.Port
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	srv := &http.Server{

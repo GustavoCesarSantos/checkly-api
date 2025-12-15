@@ -25,6 +25,17 @@ type CreateUrlEnvelop struct {
 	CreateUrl dtos.CreateUrlResponse `json:"url"`
 }
 
+// @Summary      Create a new url
+// @Description  Create a new url for monitoring.
+// @Tags         Url
+// @Accept       json
+// @Produce      json
+// @Param        input    body      dtos.CreateUrlRequest true "Create Url request"
+// @Success      201      {object}  urls.CreateUrlEnvelop "Board successfully created"
+// @Failure      400      {object}  utils.ErrorEnvelope "Empty body request"
+// @Failure      402      {object}  utils.ErrorEnvelope "Invalid request (e.g., missing parameters or validation error)"
+// @Failure      500      {object}  utils.ErrorEnvelope "Internal server error"
+// @Router      /urls [post]
 func (c *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 	metadataErr := utils.Envelope{
 		"file": "createUrl.go",
