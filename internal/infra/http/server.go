@@ -13,21 +13,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/joho/godotenv"
-
 	"GustavoCesarSantos/checkly-api/internal/shared/configs"
 )
 
 func Server(db *sql.DB) error {
-	loadEnvErr := godotenv.Load()
-	if loadEnvErr != nil {
-		slog.Error("failed to load .env file", "error", loadEnvErr)
-		return loadEnvErr
-	}
 	serverConfigs := configs.LoadServerConfig()
-	routes := routes(db)
 	port := serverConfigs.Port
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	routes := routes(db)
 	srv := &http.Server{
 		Addr:           fmt.Sprintf(":%d", port),
 		Handler:        routes,
