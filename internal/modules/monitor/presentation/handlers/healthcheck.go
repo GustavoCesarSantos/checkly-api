@@ -19,6 +19,14 @@ type HealthCheckEnvelope struct {
 	HealthCheck dtos.HealthCheckResponse `json:"health_check"`
 }
 
+// @Summary      Monitor health check
+// @Description  Monitor API health.
+// @Tags         Monitor
+// @Accept       json
+// @Produce      json
+// @Success      200      {object}  monitor.HealthCheckEnvelope "API is healthy"
+// @Failure      500      {object}  utils.ErrorEnvelope "Internal server error"
+// @Router      /health [get]
 func (h *Healthcheck) Handle(w http.ResponseWriter, r *http.Request) {
 	metadataErr := utils.Envelope{
 		"file": "healthcheck.go",

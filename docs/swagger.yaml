@@ -1,5 +1,23 @@
+basePath: /v1
 definitions:
-  domain.UrlStatus:
+  GustavoCesarSantos_checkly-api_internal_modules_monitor_presentation_dtos.HealthCheckResponse:
+    properties:
+      status:
+        example: available
+        type: string
+      system_info:
+        $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_modules_monitor_presentation_dtos.SystemInfo'
+    type: object
+  GustavoCesarSantos_checkly-api_internal_modules_monitor_presentation_dtos.SystemInfo:
+    properties:
+      environment:
+        example: development
+        type: string
+      time:
+        example: "2024-06-01T12:00:00Z"
+        type: string
+    type: object
+  GustavoCesarSantos_checkly-api_internal_modules_urls_domain.UrlStatus:
     enum:
     - 10
     - 20
@@ -13,7 +31,7 @@ definitions:
     - StatusRecovering
     - StatusDown
     - StatusNotified
-  dtos.CreateUrlRequest:
+  GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlRequest:
     properties:
       address:
         example: https://api.meuservico.com/health
@@ -30,28 +48,62 @@ definitions:
         example: 3
         type: integer
       status:
-        $ref: '#/definitions/domain.UrlStatus'
+        $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_modules_urls_domain.UrlStatus'
     type: object
-  dtos.CreateUrlResponse:
+  GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlResponse:
     properties:
       id:
         example: "1"
         type: string
     type: object
-  urls.CreateUrlEnvelop:
-    properties:
-      url:
-        $ref: '#/definitions/dtos.CreateUrlResponse'
-    type: object
-  utils.ErrorEnvelope:
+  GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope:
     properties:
       error:
         example: error message
         type: string
     type: object
+  internal_modules_monitor_presentation_handlers.HealthCheckEnvelope:
+    properties:
+      health_check:
+        $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_modules_monitor_presentation_dtos.HealthCheckResponse'
+    type: object
+  internal_modules_urls_presentation_handlers.CreateUrlEnvelop:
+    properties:
+      url:
+        $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlResponse'
+    type: object
+host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: gustavocs789@gmail.com
+    name: Gustavo Cesar Santos
+  description: API responsável por monitorar URLs e avaliar sua disponibilidade.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Checkly API
+  version: "1.0"
 paths:
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Monitor API health.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: API is healthy
+          schema:
+            $ref: '#/definitions/internal_modules_monitor_presentation_handlers.HealthCheckEnvelope'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope'
+      summary: Monitor health check
+      tags:
+      - Monitor
   /urls:
     post:
       consumes:
@@ -63,26 +115,26 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/dtos.CreateUrlRequest'
+          $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Board successfully created
           schema:
-            $ref: '#/definitions/urls.CreateUrlEnvelop'
+            $ref: '#/definitions/internal_modules_urls_presentation_handlers.CreateUrlEnvelop'
         "400":
           description: Empty body request
           schema:
-            $ref: '#/definitions/utils.ErrorEnvelope'
+            $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope'
         "402":
           description: Invalid request (e.g., missing parameters or validation error)
           schema:
-            $ref: '#/definitions/utils.ErrorEnvelope'
+            $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.ErrorEnvelope'
+            $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope'
       summary: Create a new url
       tags:
       - Url

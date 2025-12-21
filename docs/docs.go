@@ -9,12 +9,49 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Gustavo Cesar Santos",
+            "email": "gustavocs789@gmail.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/health": {
+            "get": {
+                "description": "Monitor API health.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitor"
+                ],
+                "summary": "Monitor health check",
+                "responses": {
+                    "200": {
+                        "description": "API is healthy",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_monitor_presentation_handlers.HealthCheckEnvelope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope"
+                        }
+                    }
+                }
+            }
+        },
         "/urls": {
             "post": {
                 "description": "Create a new url for monitoring.",
@@ -35,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtos.CreateUrlRequest"
+                            "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlRequest"
                         }
                     }
                 ],
@@ -43,25 +80,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Board successfully created",
                         "schema": {
-                            "$ref": "#/definitions/urls.CreateUrlEnvelop"
+                            "$ref": "#/definitions/internal_modules_urls_presentation_handlers.CreateUrlEnvelop"
                         }
                     },
                     "400": {
                         "description": "Empty body request",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorEnvelope"
+                            "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope"
                         }
                     },
                     "402": {
                         "description": "Invalid request (e.g., missing parameters or validation error)",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorEnvelope"
+                            "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/utils.ErrorEnvelope"
+                            "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope"
                         }
                     }
                 }
@@ -69,7 +106,32 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "domain.UrlStatus": {
+        "GustavoCesarSantos_checkly-api_internal_modules_monitor_presentation_dtos.HealthCheckResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "available"
+                },
+                "system_info": {
+                    "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_modules_monitor_presentation_dtos.SystemInfo"
+                }
+            }
+        },
+        "GustavoCesarSantos_checkly-api_internal_modules_monitor_presentation_dtos.SystemInfo": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "type": "string",
+                    "example": "development"
+                },
+                "time": {
+                    "type": "string",
+                    "example": "2024-06-01T12:00:00Z"
+                }
+            }
+        },
+        "GustavoCesarSantos_checkly-api_internal_modules_urls_domain.UrlStatus": {
             "type": "integer",
             "enum": [
                 10,
@@ -86,7 +148,7 @@ const docTemplate = `{
                 "StatusNotified"
             ]
         },
-        "dtos.CreateUrlRequest": {
+        "GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlRequest": {
             "type": "object",
             "properties": {
                 "address": {
@@ -109,11 +171,11 @@ const docTemplate = `{
                     "example": 3
                 },
                 "status": {
-                    "$ref": "#/definitions/domain.UrlStatus"
+                    "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_modules_urls_domain.UrlStatus"
                 }
             }
         },
-        "dtos.CreateUrlResponse": {
+        "GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -122,20 +184,28 @@ const docTemplate = `{
                 }
             }
         },
-        "urls.CreateUrlEnvelop": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "$ref": "#/definitions/dtos.CreateUrlResponse"
-                }
-            }
-        },
-        "utils.ErrorEnvelope": {
+        "GustavoCesarSantos_checkly-api_internal_shared_utils.ErrorEnvelope": {
             "type": "object",
             "properties": {
                 "error": {
                     "type": "string",
                     "example": "error message"
+                }
+            }
+        },
+        "internal_modules_monitor_presentation_handlers.HealthCheckEnvelope": {
+            "type": "object",
+            "properties": {
+                "health_check": {
+                    "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_modules_monitor_presentation_dtos.HealthCheckResponse"
+                }
+            }
+        },
+        "internal_modules_urls_presentation_handlers.CreateUrlEnvelop": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "$ref": "#/definitions/GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlResponse"
                 }
             }
         }
@@ -144,12 +214,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/v1",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Checkly API",
+	Description:      "API responsável por monitorar URLs e avaliar sua disponibilidade.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
