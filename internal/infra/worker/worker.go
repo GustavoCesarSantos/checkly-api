@@ -35,14 +35,14 @@ func NewWorker(sqlDB *sql.DB, concurrency int) *Worker {
 func (w *Worker) Start(ctx context.Context) {
 	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
-	slog.Info("worker started", "interval", w.interval.String(), "concurrency", w.concurrency)
+	slog.Info("[WORKER] Started", "interval", w.interval.String(), "concurrency", w.concurrency)
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("worker stopped")
+			slog.Info("[WORKER] Stopped")
 			return
 		case <-ticker.C:
-			slog.Info("worker tick")
+			slog.Info("[WORKER] Tick")
 			w.safeProcess(ctx)
 		}
 	}
@@ -51,13 +51,13 @@ func (w *Worker) Start(ctx context.Context) {
 func (w *Worker) safeProcess(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
-			slog.Error("worker recovered from panic", "panic", r)
+			slog.Error("[WORKER] Recovered from panic", "panic", r)
 		}
 	}()
 	err := w.monitor.Handle(ctx, w.concurrency)
 	if err != nil {
-		slog.Error("worker process error", "error", err)
+		slog.Error("[WORKER] Process error", "error", err)
 	} else {
-		slog.Info("worker cycle completed successfully")
+		slog.Info("[WORKER] Cycle completed successfully")
 	}
 }

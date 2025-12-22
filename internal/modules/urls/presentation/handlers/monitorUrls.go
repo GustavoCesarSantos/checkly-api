@@ -42,10 +42,10 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 		return err
 	}
 	if len(urls) == 0 {
-		slog.Info("[worker] Nenhuma url para verificar")
+		slog.Info("No urls to check")
 		return nil
 	}
-	slog.Info("[worker] Urls para verificar", "count", len(urls))
+	slog.Info("Urls to check", "count", len(urls))
 	g, ctx := errgroup.WithContext(ctx)
 	g.SetLimit(concurrency)
 	for i := range urls {
