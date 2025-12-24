@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE IF NOT EXISTS urls (
+CREATE TABLE urls (
     id bigserial PRIMARY KEY,
     external_id uuid NOT NULL DEFAULT uuid_generate_v4(),
     address text NOT NULL,
