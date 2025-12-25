@@ -63,7 +63,7 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 			m.evaluateUrl.Execute(u, result.IsSuccess)
 			m.scheduleNextCheck.Execute(u, result.IsSuccess, time.Now())
 			if(u.Status == domain.StatusDown) {
-				updateErr := m.updateUrlWithOutbox.Execute(ctx, u.ID, u.Contact, dtos.UpdateUrlRequest{
+				updateErr := m.updateUrlWithOutbox.Execute(ctx, *u, dtos.UpdateUrlRequest{
 					NextCheck:      u.NextCheck,
 					RetryCount:     &u.RetryCount,
 					StabilityCount: &u.StabilityCount,

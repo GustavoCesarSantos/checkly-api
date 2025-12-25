@@ -1,0 +1,27 @@
+{{define "subject"}}Url Down Alert!{{end}}
+
+{{define "plainBody"}}
+Hi,
+
+Your monitored URL is down: {{.Url}}
+
+Thanks,
+
+The Checkly Team
+{{end}}
+
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+        <p>Hi,</p>
+        <p>Your monitored URL is down: {{.Url}}</p>
+        <p>Thanks,</p>
+        <p>The Checkly Team</p>
+    </body>
+</html>
+{{end}}

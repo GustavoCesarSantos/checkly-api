@@ -12,5 +12,5 @@ type UpdateAlertParams struct {
 
 type ISentAlertsRepository interface {
 	Save(idempotencyKey string) error
-	Update(ctx context.Context, idempotencyKey string, params UpdateAlertParams) error
+	Update(ctx context.Context, idempotencyKey string, status domain.AlertStatus) error
 }

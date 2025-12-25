@@ -12,16 +12,16 @@ import (
 	unitOfWork_withDB "GustavoCesarSantos/checkly-api/internal/modules/urls/utils/unitOfWork/repositoryUnitOfWork/withDB"
 )
 
-type Worker struct {
+type MonitorWorker struct {
 	interval    time.Duration
 	concurrency int
 	monitor     *urls.MonitorUrls
 }
 
-func NewWorker(sqlDB *sql.DB, concurrency int) *Worker {
+func NewMonitorWorker(sqlDB *sql.DB, concurrency int) *MonitorWorker {
 	urlRepo := db.NewUrlRepository(sqlDB)
 	repoUoW := unitOfWork_withDB.NewRepositoryFactory(sqlDB)
-	return &Worker{
+	return &MonitorWorker{
 		interval:    1 * time.Minute,
 		concurrency: concurrency,
 		monitor: urls.NewMonitorUrls(
@@ -35,32 +35,32 @@ func NewWorker(sqlDB *sql.DB, concurrency int) *Worker {
 	}
 }
 
-func (w *Worker) Start(ctx context.Context) {
+func (w *MonitorWorker) Start(ctx context.Context) {
 	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
-	slog.Info("[WORKER] Started", "interval", w.interval.String(), "concurrency", w.concurrency)
+	slog.Info("[MONITOR WORKER] Started", "interval", w.interval.String(), "concurrency", w.concurrency)
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("[WORKER] Stopped")
+			slog.Info("[MONITOR WORKER] Stopped")
 			return
 		case <-ticker.C:
-			slog.Info("[WORKER] Tick")
+			slog.Info("[MONITOR WORKER] Tick")
 			w.safeProcess(ctx)
 		}
 	}
 }
 
-func (w *Worker) safeProcess(ctx context.Context) {
+func (w *MonitorWorker) safeProcess(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
-			slog.Error("[WORKER] Recovered from panic", "panic", r)
+			slog.Error("[MONITOR WORKER] Recovered from panic", "panic", r)
 		}
 	}()
 	err := w.monitor.Handle(ctx, w.concurrency)
 	if err != nil {
-		slog.Error("[WORKER] Process error", "error", err)
+		slog.Error("[MONITOR WORKER] Process error", "error", err)
 	} else {
-		slog.Info("[WORKER] Cycle completed successfully")
+		slog.Info("[MONITOR WORKER] Cycle completed successfully")
 	}
 }

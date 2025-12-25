@@ -11,7 +11,8 @@ const (
 )
 
 type Payload struct {
-	Email   string `json:"email"`
+	Url		string `json:"url"`
+	Email	string `json:"email"`
 }
 
 type AlertOutbox struct {

@@ -27,8 +27,10 @@ func main() {
 	}
 	defer db.Close()
 	slog.Info("[WORKER] Database connection pool established")
-	w := worker.NewWorker(db, 5)
+	mw := worker.NewMonitorWorker(db, 5)
+	nw := worker.NewNotifyWorker(db, 5)
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
-	w.Start(ctx)
+	mw.Start(ctx)
+	nw.Start(ctx)
 }

@@ -86,7 +86,35 @@ func (a *alertOutboxRepository) Save(alert *domain.AlertOutbox) error {
 	return a.DB.QueryRowContext(ctx, query, args...).Err()
 }
 
-func (a *alertOutboxRepository) UpdateRetryInfo(ctx context.Context, id int64) error {
+func (a *alertOutboxRepository) Update(ctx context.Context, alertId int64, sentAt time.Time) error {
+	query := `
+		UPDATE 
+			alert_outbox
+		SET 
+			sent_at = $1,
+			updated_at = NOW()
+		WHERE 
+			id = $2
+	`
+	args := []any{
+		sentAt,
+		alertId,
+	}
+	result, err := a.DB.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+	rowsAffected, rowsAffectedErr := result.RowsAffected()
+	if rowsAffectedErr != nil {
+		return rowsAffectedErr
+	}
+	if rowsAffected == 0 {
+		return utils.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (a *alertOutboxRepository) UpdateRetryInfo(ctx context.Context, alertId int64) error {
 	query := `
 		UPDATE 
 			alert_outbox
@@ -97,7 +125,7 @@ func (a *alertOutboxRepository) UpdateRetryInfo(ctx context.Context, id int64) e
         WHERE 
 			id = $1
 	`
-	result, err := a.DB.ExecContext(ctx, query, id)
+	result, err := a.DB.ExecContext(ctx, query, alertId)
 	if err != nil {
 		return err
 	}

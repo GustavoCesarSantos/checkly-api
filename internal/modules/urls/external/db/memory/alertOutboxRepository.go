@@ -44,6 +44,17 @@ func (r *alertOutboxRepository) Save(alertOutbox *domain.AlertOutbox) error {
 	return nil
 }
 
+func (r *alertOutboxRepository) Update(ctx context.Context, alertId int64, sentAt time.Time) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	alertOutbox, ok := r.data[alertId]
+	if !ok {
+		return errors.New("alert not found")
+	}
+	alertOutbox.SentAt = &sentAt
+	return nil
+}
+
 func (r *alertOutboxRepository) UpdateRetryInfo(ctx context.Context, alertId int64) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

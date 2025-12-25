@@ -20,7 +20,7 @@ func NewUpdateUrlWithOutbox(repositoryUnitOfWork unitOfWork.IRepositoryUnitOfWor
 	}
 }
 
-func (u *UpdateUrlWithOutbox) Execute(ctx context.Context, urlId int64, contact string, input dtos.UpdateUrlRequest) error {
+func (u *UpdateUrlWithOutbox) Execute(ctx context.Context, url domain.Url, input dtos.UpdateUrlRequest) error {
 	return u.repositoryUnitOfWork.WithTx(ctx, func(f factory.IRepositoryFactory) error {
 		params := db.UpdateUrlParams{
 			NextCheck:      input.NextCheck,
@@ -28,14 +28,15 @@ func (u *UpdateUrlWithOutbox) Execute(ctx context.Context, urlId int64, contact 
 			StabilityCount: input.StabilityCount,
 			Status:         input.Status,
 		}
-		err := f.Urls().Update(ctx, urlId, params)
+		err := f.Urls().Update(ctx, url.ID, params)
 		if err != nil {
 			return err
 		}
 		alert := domain.NewAlertOutbox(
-			urlId,
+			url.ID,
 			domain.Payload{
-				Email: contact,
+				Url:   url.Address,
+				Email: url.Contact,
 			},
 		)
 		return f.AlertOutbox().Save(alert)

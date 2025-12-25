@@ -40,17 +40,15 @@ func (r *sentAlertsRepository) Save(idempotencyKey string) error {
 	return nil
 }
 
-func (r *sentAlertsRepository) Update(ctx context.Context, idempotencyKey string, params db.UpdateAlertParams) error {
+func (r *sentAlertsRepository) Update(ctx context.Context, idempotencyKey string, status domain.AlertStatus) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	alert, ok := r.data[idempotencyKey]
 	if !ok {
 		return errors.New("alert not found")
 	}
-	if params.Status != nil {
-		alert.Status = *params.Status
-		sentAt := time.Now()
-		alert.SentAt = &sentAt
-	}
+	alert.Status = status
+	sentAt := time.Now()
+	alert.SentAt = &sentAt
 	return nil
 }

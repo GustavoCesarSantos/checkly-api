@@ -3,11 +3,9 @@ package nativeSQL
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"strconv"
-	"strings"
 	"time"
 
+	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 )
@@ -36,21 +34,20 @@ func (a *sentAlertsRepository) Save(idempotencyKey string) error {
 	return a.DB.QueryRowContext(ctx, query, idempotencyKey).Err()
 }
 
-func (a *sentAlertsRepository) Update(ctx context.Context, idempotencyKey string, params db.UpdateAlertParams) error {
-	if params.Status == nil {
-		return errors.New("NO COLUMN FIELD PROVIDED FOR UPDATING")
+func (a *sentAlertsRepository) Update(ctx context.Context, idempotencyKey string, status domain.AlertStatus) error {
+	query := `
+		UPDATE 
+			sent_alerts 
+		SET 
+			status = $1, 
+			sent_at = NOW() 
+		WHERE 
+			idempotency_key = $2
+	`
+	args := []any{
+		status,
+		idempotencyKey,
 	}
-	query := "UPDATE sent_alerts SET"
-	var args []interface{}
-	argPos := 1
-	if params.Status != nil {
-		query += " status = $" + strconv.Itoa(argPos) + ","
-		args = append(args, *params.Status)
-		argPos++
-	}
-	query += " sent_at = NOW()"
-	query = strings.TrimSuffix(query, ",") + " WHERE idempotency_key = $" + strconv.Itoa(argPos)
-	args = append(args, idempotencyKey)
 	result, err := a.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err

@@ -176,7 +176,7 @@ func (u *urlRepository) UpdateToNotified(ctx context.Context, urlId int64) error
 		return rowsAffectedErr
 	}
 	if rowsAffected == 0 {
-		return utils.ErrRecordNotFound
+		return nil
 	}
 	return nil
 }
