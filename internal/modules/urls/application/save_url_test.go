@@ -27,6 +27,10 @@ func (f *failingRepository) Update(_ context.Context, _ int64, _ db.UpdateUrlPar
 	panic("not used")
 }
 
+func (f *failingRepository) UpdateToNotified(_ context.Context, _ int64) error {
+	panic("not used")
+}
+
 func TestSaveUrl_Execute_Healthy(t *testing.T) {
 	repo := memory.NewUrlRepository()
 	sut := NewSaveUrl(repo)

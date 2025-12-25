@@ -1,22 +1,23 @@
-package db
+package nativeSQL
 
 import (
-	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
-	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
-	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 	"context"
-	"database/sql"
 	"errors"
 	"strconv"
 	"strings"
 	"time"
+
+	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
+	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
+	urls_utils "GustavoCesarSantos/checkly-api/internal/modules/urls/utils"
+	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 )
 
 type urlRepository struct {
-	DB *sql.DB
+	DB urls_utils.DBExecutor
 }
 
-func NewUrlRepository(db *sql.DB) db.IUrlRepository {
+func NewUrlRepository(db urls_utils.DBExecutor) db.IUrlRepository {
 	return &urlRepository{
 		DB: db,
 	}
@@ -142,6 +143,31 @@ func (u *urlRepository) Update(ctx context.Context, urlId int64, params db.Updat
 	query = strings.TrimSuffix(query, ",") + " WHERE id = $" + strconv.Itoa(argPos)
 	args = append(args, urlId)
 	result, err := u.DB.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+	rowsAffected, rowsAffectedErr := result.RowsAffected()
+	if rowsAffectedErr != nil {
+		return rowsAffectedErr
+	}
+	if rowsAffected == 0 {
+		return utils.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (u *urlRepository) UpdateToNotified(ctx context.Context, urlId int64) error {
+	query := `
+		UPDATE 
+			urls
+		SET 
+			status = 40,
+			updated_at = NOW()
+		WHERE 
+			id = $1
+			AND status = 30;
+	`
+	result, err := u.DB.ExecContext(ctx, query, urlId)
 	if err != nil {
 		return err
 	}

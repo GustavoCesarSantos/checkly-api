@@ -75,3 +75,16 @@ func (r *UrlRepository) Update(
 	}
 	return nil
 }
+
+func (r *UrlRepository) UpdateToNotified(ctx context.Context, urlId int64) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	url, ok := r.data[urlId]
+	if !ok {
+		return errors.New("url not found")
+	}
+	if url.Status == domain.StatusDown {
+		url.Status = domain.StatusNotified
+	}
+	return nil
+}

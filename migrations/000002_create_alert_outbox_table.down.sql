@@ -1,0 +1,4 @@
+DROP INDEX idx_alert_outbox_pending;
+DROP INDEX idx_alert_outbox_locked_at;
+DROP INDEX idx_alert_outbox_url_status;
+DROP INDEX idx_alert_outbox_idempotency_key;

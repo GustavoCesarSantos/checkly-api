@@ -8,6 +8,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
+	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
 )
@@ -17,6 +18,7 @@ type MonitorUrls struct {
 	evaluateUrl   *application.EvaluateUrl
 	scheduleNextCheck *application.ScheduleNextCheck
 	updateUrl     *application.UpdateUrl
+	updateUrlWithOutbox *application.UpdateUrlWithOutbox
 	urlRepository db.IUrlRepository
 }
 
@@ -25,6 +27,7 @@ func NewMonitorUrls(
 	evaluateUrl *application.EvaluateUrl,
 	scheduleNextCheck *application.ScheduleNextCheck,
 	updateUrl *application.UpdateUrl,
+	updateUrlWithOutbox *application.UpdateUrlWithOutbox,
 	urlRepository db.IUrlRepository,
 ) *MonitorUrls {
 	return &MonitorUrls{
@@ -32,6 +35,7 @@ func NewMonitorUrls(
 		evaluateUrl:   evaluateUrl,
 		scheduleNextCheck: scheduleNextCheck,
 		updateUrl:     updateUrl,
+		updateUrlWithOutbox: updateUrlWithOutbox,
 		urlRepository: urlRepository,
 	}
 }
@@ -58,6 +62,19 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 			}
 			m.evaluateUrl.Execute(u, result.IsSuccess)
 			m.scheduleNextCheck.Execute(u, result.IsSuccess, time.Now())
+			if(u.Status == domain.StatusDown) {
+				updateErr := m.updateUrlWithOutbox.Execute(ctx, u.ID, u.Contact, dtos.UpdateUrlRequest{
+					NextCheck:      u.NextCheck,
+					RetryCount:     &u.RetryCount,
+					StabilityCount: &u.StabilityCount,
+					Status:         &u.Status,
+				})
+				if updateErr != nil {
+					slog.Error("update failed", "urlId", u.ID, "error", updateErr)
+					return updateErr
+				}
+				return nil
+			}
 			updateErr := m.updateUrl.Execute(ctx, u.ID, dtos.UpdateUrlRequest{
 				NextCheck:      u.NextCheck,
 				RetryCount:     &u.RetryCount,

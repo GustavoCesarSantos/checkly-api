@@ -32,6 +32,10 @@ func (f *failingUpdateRepository) Update(
 	return errUpdate
 }
 
+func (f *failingUpdateRepository) UpdateToNotified(_ context.Context, _ int64) error {
+	panic("not used")
+}
+
 func TestUpdateUrl_Execute_UpdateFields(t *testing.T) {
 	// Arrange
 	ctx := context.Background()

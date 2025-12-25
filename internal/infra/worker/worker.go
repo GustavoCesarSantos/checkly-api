@@ -9,6 +9,7 @@ import (
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/nativeSQL"
 	urls "GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/handlers"
+	unitOfWork_withDB "GustavoCesarSantos/checkly-api/internal/modules/urls/utils/unitOfWork/repositoryUnitOfWork/withDB"
 )
 
 type Worker struct {
@@ -18,7 +19,8 @@ type Worker struct {
 }
 
 func NewWorker(sqlDB *sql.DB, concurrency int) *Worker {
-	repo := db.NewUrlRepository(sqlDB)
+	urlRepo := db.NewUrlRepository(sqlDB)
+	repoUoW := unitOfWork_withDB.NewRepositoryFactory(sqlDB)
 	return &Worker{
 		interval:    1 * time.Minute,
 		concurrency: concurrency,
@@ -26,8 +28,9 @@ func NewWorker(sqlDB *sql.DB, concurrency int) *Worker {
 			application.NewCheckUrl(),
 			application.NewEvaluateUrl(),
 			application.NewScheduleNextCheck(),
-			application.NewUpdateUrl(repo),
-			repo,
+			application.NewUpdateUrl(urlRepo),
+			application.NewUpdateUrlWithOutbox(repoUoW),
+			urlRepo,
 		),
 	}
 }
