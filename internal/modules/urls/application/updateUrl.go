@@ -1,9 +1,10 @@
 package application
 
 import (
+	"context"
+
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
-	"context"
 )
 
 // UpdateUrl é responsável por aplicar atualizações

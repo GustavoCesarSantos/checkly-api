@@ -1,8 +1,9 @@
 package db
 
 import (
-	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	"context"
+
+	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 )
 
 type UpdateAlertParams struct {

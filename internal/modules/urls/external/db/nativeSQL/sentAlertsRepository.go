@@ -1,14 +1,15 @@
 package nativeSQL
 
 import (
-	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
-	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 	"context"
 	"database/sql"
 	"errors"
 	"strconv"
 	"strings"
 	"time"
+
+	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
+	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 )
 
 type sentAlertsRepository struct {

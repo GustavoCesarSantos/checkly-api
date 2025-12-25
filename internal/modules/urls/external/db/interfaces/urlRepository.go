@@ -1,9 +1,10 @@
 package db
 
 import (
-	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	"context"
 	"time"
+
+	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 )
 
 type UpdateUrlParams struct {

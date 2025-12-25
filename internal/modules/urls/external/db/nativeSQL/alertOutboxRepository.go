@@ -1,12 +1,13 @@
 package nativeSQL
 
 import (
+	"context"
+	"time"
+
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	urls_utils "GustavoCesarSantos/checkly-api/internal/modules/urls/utils"
 	"GustavoCesarSantos/checkly-api/internal/shared/utils"
-	"context"
-	"time"
 )
 
 type alertOutboxRepository struct {

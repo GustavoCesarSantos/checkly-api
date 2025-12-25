@@ -1,8 +1,9 @@
 package dtos
 
 import (
-	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	"time"
+
+	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 )
 
 type UpdateUrlRequest struct {

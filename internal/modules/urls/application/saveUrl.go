@@ -1,10 +1,11 @@
 package application
 
 import (
+	"time"
+
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
-	"time"
 )
 
 // SaveUrl é responsável por criar e persistir
