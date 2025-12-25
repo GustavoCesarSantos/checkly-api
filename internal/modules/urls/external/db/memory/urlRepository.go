@@ -10,20 +10,20 @@ import (
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 )
 
-type UrlRepository struct {
+type urlRepository struct {
 	mu   sync.Mutex
 	data map[int64]*domain.Url
 	next int64
 }
 
-func NewUrlRepository() *UrlRepository {
-	return &UrlRepository{
+func NewUrlRepository() db.IUrlRepository {
+	return &urlRepository{
 		data: make(map[int64]*domain.Url),
 		next: 1,
 	}
 }
 
-func (r *UrlRepository) FindAllByNextCheck(
+func (r *urlRepository) FindAllByNextCheck(
 	ctx context.Context,
 	nextCheck time.Time,
 ) ([]domain.Url, error) {
@@ -41,7 +41,7 @@ func (r *UrlRepository) FindAllByNextCheck(
 	return result, nil
 }
 
-func (r *UrlRepository) Save(url *domain.Url) error {
+func (r *urlRepository) Save(url *domain.Url) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	url.ID = r.next
@@ -50,7 +50,7 @@ func (r *UrlRepository) Save(url *domain.Url) error {
 	return nil
 }
 
-func (r *UrlRepository) Update(
+func (r *urlRepository) Update(
 	ctx context.Context,
 	urlId int64,
 	params db.UpdateUrlParams,
@@ -76,7 +76,7 @@ func (r *UrlRepository) Update(
 	return nil
 }
 
-func (r *UrlRepository) UpdateToNotified(ctx context.Context, urlId int64) error {
+func (r *urlRepository) UpdateToNotified(ctx context.Context, urlId int64) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	url, ok := r.data[urlId]

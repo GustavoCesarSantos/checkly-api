@@ -2,6 +2,14 @@ package domain
 
 import "time"
 
+type AlertStatus int
+
+const (
+	AlertStatusPending  AlertStatus = 10
+	AlertStatusSent   	AlertStatus = 20
+	AlertStatusFailed 	AlertStatus = 30
+)
+
 type Payload struct {
 	Email   string `json:"email"`
 }

@@ -6,9 +6,6 @@ import (
 	urls_utils "GustavoCesarSantos/checkly-api/internal/modules/urls/utils"
 	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 	"context"
-	"errors"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -86,35 +83,6 @@ func (a *alertOutboxRepository) Save(alert *domain.AlertOutbox) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	return a.DB.QueryRowContext(ctx, query, args...).Err()
-}
-
-func (a *alertOutboxRepository) Update(ctx context.Context, alertId int64, params db.UpdateAlertParams) error {
-	if params.IdempotencyKey == nil {
-		return errors.New("NO COLUMN FIELD PROVIDED FOR UPDATING")
-	}
-	query := "UPDATE alert_outbox SET"
-	var args []interface{}
-	argPos := 1
-	if params.IdempotencyKey != nil {
-		query += " idempotency_key = $" + strconv.Itoa(argPos) + ","
-		args = append(args, *params.IdempotencyKey)
-		argPos++
-	}
-	query += " updated_at = NOW()"
-	query = strings.TrimSuffix(query, ",") + " WHERE id = $" + strconv.Itoa(argPos)
-	args = append(args, alertId)
-	result, err := a.DB.ExecContext(ctx, query, args...)
-	if err != nil {
-		return err
-	}
-	rowsAffected, rowsAffectedErr := result.RowsAffected()
-	if rowsAffectedErr != nil {
-		return rowsAffectedErr
-	}
-	if rowsAffected == 0 {
-		return utils.ErrRecordNotFound
-	}
-	return nil
 }
 
 func (a *alertOutboxRepository) UpdateRetryInfo(ctx context.Context, id int64) error {
