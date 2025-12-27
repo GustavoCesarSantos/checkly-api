@@ -27,6 +27,7 @@ func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.T
 	query := `
         SELECT
             id,
+			external_id,
             address,
             interval,
             retry_limit,
@@ -51,6 +52,7 @@ func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.T
 		var url domain.Url
 		err := rows.Scan(
 			&url.ID,
+			&url.ExternalID,
 			&url.Address,
 			&url.Interval,
 			&url.RetryLimit,

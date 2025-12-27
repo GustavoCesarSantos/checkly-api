@@ -15,7 +15,10 @@ func NewSendEmail(mailer mailer.Mailer) *SendEmail {
 }
 
 func (s *SendEmail) Execute(payload domain.Payload) error {
-	err := s.mailer.Send(payload.Email, "alert_url_down.tmpl", payload.Url)
+	data := map[string]any{
+		"url":          payload.Url,
+	}
+	err := s.mailer.Send(payload.Email, "alert_url_down.tmpl", data)
 	if err != nil {
 		slog.Warn("failed to send email", "to", payload.Email, "error", err.Error())
 		return err

@@ -34,7 +34,7 @@ func (r *sentAlertsRepository) Save(idempotencyKey string) error {
 	defer r.mu.Unlock()
 	alert := sentAlerts{
 		IdempotencyKey: idempotencyKey,
-		Status:         domain.AlertStatusPending,
+		Status:         domain.StatusPending,
 	}
 	r.data[alert.IdempotencyKey] = &alert
 	return nil

@@ -23,7 +23,9 @@ func NewAlertOutboxRepository(db urls_utils.DBExecutor) db.IAlertOutboxRepositor
 func (a *alertOutboxRepository) FindAllPendingAlerts(ctx context.Context, limit int) ([]domain.AlertOutbox, error) {
 	query := `
         SELECT 
-			*
+			id,
+			url_id,
+			payload
 		FROM 
 			alert_outbox
 		WHERE 
@@ -46,14 +48,6 @@ func (a *alertOutboxRepository) FindAllPendingAlerts(ctx context.Context, limit 
 			&alert.ID,
 			&alert.UrlId,
 			&alert.Payload,
-			&alert.IdempotencyKey,
-			&alert.SentAt,
-			&alert.ProcessingAt,
-			&alert.RetryCount,
-			&alert.NextRetryAt,
-			&alert.LockedAt,
-			&alert.LockedBy,
-			&alert.CreatedAt,
 		)
 		if err != nil {
 			return nil, err

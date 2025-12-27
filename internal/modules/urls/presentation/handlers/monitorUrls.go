@@ -2,54 +2,73 @@ package urls
 
 import (
 	"context"
-	"log/slog"
+	"errors"
 	"time"
 
 	"golang.org/x/sync/errgroup"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
-	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
+	"GustavoCesarSantos/checkly-api/internal/shared/logger"
+	"GustavoCesarSantos/checkly-api/internal/shared/utils"
 )
 
 type MonitorUrls struct {
 	checkUrl      *application.CheckUrl
 	evaluateUrl   *application.EvaluateUrl
+	fetchUrls *application.FetchUrls
 	scheduleNextCheck *application.ScheduleNextCheck
 	updateUrl     *application.UpdateUrl
 	updateUrlWithOutbox *application.UpdateUrlWithOutbox
-	urlRepository db.IUrlRepository
 }
 
 func NewMonitorUrls(
 	checkUrl *application.CheckUrl,
 	evaluateUrl *application.EvaluateUrl,
+	fetchUrls *application.FetchUrls,
 	scheduleNextCheck *application.ScheduleNextCheck,
 	updateUrl *application.UpdateUrl,
 	updateUrlWithOutbox *application.UpdateUrlWithOutbox,
-	urlRepository db.IUrlRepository,
 ) *MonitorUrls {
 	return &MonitorUrls{
 		checkUrl:      checkUrl,
 		evaluateUrl:   evaluateUrl,
+		fetchUrls:     fetchUrls,
 		scheduleNextCheck: scheduleNextCheck,
 		updateUrl:     updateUrl,
 		updateUrlWithOutbox: updateUrlWithOutbox,
-		urlRepository: urlRepository,
 	}
 }
 
 func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
-	urls, err := m.urlRepository.FindAllByNextCheck(ctx, time.Now())
+	urls, err := m.fetchUrls.Execute(ctx, time.Now())
 	if err != nil {
+		if errors.Is(err, utils.ErrRecordNotFound) {
+			logger.InfoContext(
+				ctx,
+				"No pending urls found",
+				"monitor-worker",
+				"monitor_urls.Handle",
+			)
+			return nil
+		}
+		logger.ErrorContext(
+			ctx,
+			"Failed to fetch pending urls",
+			"monitor-worker",
+			"monitor_urls.Handle",
+			err,
+		)
 		return err
 	}
-	if len(urls) == 0 {
-		slog.Info("No urls to check")
-		return nil
-	}
-	slog.Info("Urls to check", "count", len(urls))
+	logger.InfoContext(
+		ctx,
+		"Starting URL monitoring",
+		"monitor-worker",
+		"monitor_urls.Handle",
+		"count", len(urls),
+	)
 	g, ctx := errgroup.WithContext(ctx)
 	g.SetLimit(concurrency)
 	for i := range urls {
@@ -57,7 +76,13 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 		g.Go(func() error {
 			result, checkErr := m.checkUrl.Execute(u.Address)
 			if checkErr != nil {
-				slog.Warn("check failed", "url", u.Address, "error", checkErr)
+				logger.Warn(
+					"Check URL failed",
+					"monitor-worker",
+					"monitor_urls.Handle",
+					"url", u.Address,
+					"error", checkErr,
+				)
 				return checkErr
 			}
 			m.evaluateUrl.Execute(u, result.IsSuccess)
@@ -70,7 +95,13 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 					Status:         &u.Status,
 				})
 				if updateErr != nil {
-					slog.Error("update failed", "urlId", u.ID, "error", updateErr)
+					logger.Error(
+						"Failed to update url with outbox",
+						"monitor-worker",
+						"monitor_urls.Handle",
+						updateErr,
+						"url entity", u,
+					)
 					return updateErr
 				}
 				return nil
@@ -82,7 +113,13 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 				Status:         &u.Status,
 			})
 			if updateErr != nil {
-				slog.Error("update failed", "urlId", u.ID, "error", updateErr)
+				logger.Error(
+					"Failed to update url with outbox",
+					"monitor-worker",
+					"monitor_urls.Handle",
+					updateErr,
+					"url entity", u,
+				)
 				return updateErr
 			}
 			return nil

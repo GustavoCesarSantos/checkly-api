@@ -27,10 +27,10 @@ func NewMonitorWorker(sqlDB *sql.DB, concurrency int) *MonitorWorker {
 		monitor: urls.NewMonitorUrls(
 			application.NewCheckUrl(),
 			application.NewEvaluateUrl(),
+			application.NewFetchUrls(urlRepo),
 			application.NewScheduleNextCheck(),
 			application.NewUpdateUrl(urlRepo),
 			application.NewUpdateUrlWithOutbox(repoUoW),
-			urlRepo,
 		),
 	}
 }
@@ -38,14 +38,14 @@ func NewMonitorWorker(sqlDB *sql.DB, concurrency int) *MonitorWorker {
 func (w *MonitorWorker) Start(ctx context.Context) {
 	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
-	slog.Info("[MONITOR WORKER] Started", "interval", w.interval.String(), "concurrency", w.concurrency)
+	slog.Info("Started", "interval", w.interval.String(), "concurrency", w.concurrency)
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("[MONITOR WORKER] Stopped")
+			slog.Info("Stopped")
 			return
 		case <-ticker.C:
-			slog.Info("[MONITOR WORKER] Tick")
+			slog.Info("Tick")
 			w.safeProcess(ctx)
 		}
 	}
@@ -54,13 +54,13 @@ func (w *MonitorWorker) Start(ctx context.Context) {
 func (w *MonitorWorker) safeProcess(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
-			slog.Error("[MONITOR WORKER] Recovered from panic", "panic", r)
+			slog.Error("Recovered from panic", "panic", r)
 		}
 	}()
 	err := w.monitor.Handle(ctx, w.concurrency)
 	if err != nil {
-		slog.Error("[MONITOR WORKER] Process error", "error", err)
+		slog.Error("Process error", "error", err)
 	} else {
-		slog.Info("[MONITOR WORKER] Cycle completed successfully")
+		slog.Info("Cycle completed successfully")
 	}
 }

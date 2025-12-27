@@ -1,1 +1,1 @@
-docker compose --env-file ./.env -f ./devops/dev/docker-compose.yml build api --no-cache
+docker compose --env-file ./.env -f ./devops/dev/docker-compose.yml build checkly-api --no-cache

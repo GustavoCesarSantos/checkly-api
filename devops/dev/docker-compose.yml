@@ -40,7 +40,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command: ["chmod +x /scripts/migrate-up.sh && /scripts/migrate-up.sh"]
 
-  api:
+  checkly-api:
     build:
       context: ../..
       dockerfile: devops/Dockerfile
