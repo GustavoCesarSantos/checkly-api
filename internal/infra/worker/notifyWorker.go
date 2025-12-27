@@ -31,7 +31,7 @@ func NewNotifyWorker(sqlDB *sql.DB, concurrency int) *NotifyWorker {
 	alertRepo := db.NewAlertOutboxRepository(sqlDB)
 	urlRepo := db.NewUrlRepository(sqlDB)
 	return &NotifyWorker{
-		interval: 2 * time.Minute,
+		interval: 1 * time.Minute,
 		concurrency: concurrency,
 		notifyCustomer: urls.NewNotifyCustomer(
 			application.NewFetchPendingAlerts(alertRepo),

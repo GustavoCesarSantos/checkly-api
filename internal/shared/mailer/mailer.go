@@ -21,6 +21,7 @@ type Mailer struct {
 func NewMailer(host string, port int, username, password, sender string) Mailer {
 	dialer := mail.NewDialer(host, port, username, password)
 	dialer.Timeout = 5 * time.Second
+	dialer.SSL = true
 	return Mailer{
 		dialer: dialer,
 		sender: sender,

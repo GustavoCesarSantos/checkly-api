@@ -15,7 +15,7 @@ type MailerConfig struct {
 }
 
 func LoadMailerConfig() MailerConfig {
-	port, portErr := strconv.Atoi(GetEnv("Port", "25"))
+	port, portErr := strconv.Atoi(GetEnv("MAILER_PORT", "25"))
 	if portErr != nil {
 		slog.Error(portErr.Error())
 		os.Exit(1)
