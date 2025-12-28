@@ -32,6 +32,7 @@ func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.T
             interval,
             retry_limit,
             retry_count,
+			down_count,
             stability_count,
             contact,
             next_check,
@@ -56,6 +57,7 @@ func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.T
 			&url.Interval,
 			&url.RetryLimit,
 			&url.RetryCount,
+			&url.DownCount,
 			&url.StabilityCount,
 			&url.Contact,
 			&url.NextCheck,
@@ -113,6 +115,7 @@ func (u *urlRepository) Save(url *domain.Url) error {
 func (u *urlRepository) Update(ctx context.Context, urlId int64, params db.UpdateUrlParams) error {
 	if params.NextCheck == nil &&
 		params.RetryCount == nil &&
+		params.DownCount == nil &&
 		params.StabilityCount == nil &&
 		params.Status == nil {
 		return errors.New("NO COLUMN FIELD PROVIDED FOR UPDATING")
@@ -128,6 +131,11 @@ func (u *urlRepository) Update(ctx context.Context, urlId int64, params db.Updat
 	if params.RetryCount != nil {
 		query += " retry_count = $" + strconv.Itoa(argPos) + ","
 		args = append(args, *params.RetryCount)
+		argPos++
+	}
+	if params.DownCount != nil {
+		query += " down_count = $" + strconv.Itoa(argPos) + ","
+		args = append(args, *params.DownCount)
 		argPos++
 	}
 	if params.StabilityCount != nil {

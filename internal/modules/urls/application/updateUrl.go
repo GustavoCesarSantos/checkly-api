@@ -35,6 +35,7 @@ func (u *UpdateUrl) Execute(ctx context.Context, urlId int64, input dtos.UpdateU
 	params := db.UpdateUrlParams{
 		NextCheck:      input.NextCheck,
 		RetryCount:     input.RetryCount,
+		DownCount:      input.DownCount,
 		StabilityCount: input.StabilityCount,
 		Status:         input.Status,
 	}

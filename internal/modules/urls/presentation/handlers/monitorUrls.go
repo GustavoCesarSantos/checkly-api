@@ -76,7 +76,8 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 		g.Go(func() error {
 			result, checkErr := m.checkUrl.Execute(u.Address)
 			if checkErr != nil {
-				logger.Warn(
+				logger.WarnContext(
+					ctx,
 					"Check URL failed",
 					"monitor-worker",
 					"monitor_urls.Handle",
@@ -87,7 +88,8 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 			}
 			evaluateErr := m.evaluateUrl.Execute(u, result.IsSuccess)
 			if evaluateErr != nil {
-				logger.Error(
+				logger.ErrorContext(
+					ctx,
 					"Failed to evaluate url",
 					"monitor-worker",
 					"monitor_urls.Handle",
@@ -98,7 +100,8 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 			}
 			scheduleErr := m.scheduleNextCheck.Execute(u, time.Now())
 			if scheduleErr != nil {
-				logger.Error(
+				logger.ErrorContext(
+					ctx,
 					"Failed to schedule next check",
 					"monitor-worker",
 					"monitor_urls.Handle",
@@ -111,11 +114,13 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 				updateErr := m.updateUrlWithOutbox.Execute(ctx, *u, dtos.UpdateUrlRequest{
 					NextCheck:      u.NextCheck,
 					RetryCount:     &u.RetryCount,
+					DownCount:		&u.DownCount,
 					StabilityCount: &u.StabilityCount,
 					Status:         &u.Status,
 				})
 				if updateErr != nil {
-					logger.Error(
+					logger.ErrorContext(
+						ctx,
 						"Failed to update url with outbox",
 						"monitor-worker",
 						"monitor_urls.Handle",
@@ -129,12 +134,14 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 			updateErr := m.updateUrl.Execute(ctx, u.ID, dtos.UpdateUrlRequest{
 				NextCheck:      u.NextCheck,
 				RetryCount:     &u.RetryCount,
+				DownCount:		&u.DownCount,
 				StabilityCount: &u.StabilityCount,
 				Status:         &u.Status,
 			})
 			if updateErr != nil {
-				logger.Error(
-					"Failed to update url with outbox",
+				logger.ErrorContext(
+					ctx,
+					"Failed to update url",
 					"monitor-worker",
 					"monitor_urls.Handle",
 					updateErr,

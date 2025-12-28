@@ -67,6 +67,9 @@ func (r *urlRepository) Update(
 	if params.RetryCount != nil {
 		url.RetryCount = *params.RetryCount
 	}
+	if params.DownCount != nil {
+		url.DownCount = *params.DownCount
+	}
 	if params.StabilityCount != nil {
 		url.StabilityCount = *params.StabilityCount
 	}

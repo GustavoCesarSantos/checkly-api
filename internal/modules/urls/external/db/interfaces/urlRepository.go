@@ -10,6 +10,7 @@ import (
 type UpdateUrlParams struct {
 	NextCheck      *time.Time
 	RetryCount     *int
+	DownCount     *int
 	StabilityCount *int
 	Status         *domain.UrlStatus
 }

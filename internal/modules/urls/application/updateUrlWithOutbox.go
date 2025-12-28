@@ -25,6 +25,7 @@ func (u *UpdateUrlWithOutbox) Execute(ctx context.Context, url domain.Url, input
 		params := db.UpdateUrlParams{
 			NextCheck:      input.NextCheck,
 			RetryCount:     input.RetryCount,
+			DownCount:      input.DownCount,
 			StabilityCount: input.StabilityCount,
 			Status:         input.Status,
 		}
