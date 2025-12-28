@@ -43,24 +43,27 @@ func NewEvaluateUrl() *EvaluateUrl {
 // - O cálculo do NextCheck depende do estado final
 func (e *EvaluateUrl) Execute(url *domain.Url, httpOK bool) error {
 	switch {
+	case url.Status == domain.StatusHealthy && httpOK:
+		return nil
 	case url.Status == domain.StatusHealthy && !httpOK:
 		url.Status = domain.StatusDegraded
 		url.RetryCount = 1
-
+		return nil
 	case url.Status == domain.StatusDegraded && httpOK:
 		url.Status = domain.StatusRecovering
 		url.RetryCount = 0
 		url.StabilityCount = 1
-
+		return nil
 	case url.Status == domain.StatusDegraded && !httpOK:
 		if url.RetryCount >= url.RetryLimit {
 			url.Status = domain.StatusDown
 			url.RetryCount = 0
 			url.DownCount = 1
+			url.WentDownNow = true
 		} else {
 			url.RetryCount++
 		}
-
+		return nil
 	case url.Status == domain.StatusRecovering && httpOK:
 		if url.StabilityCount >= 3 {
 			url.Status = domain.StatusHealthy
@@ -68,22 +71,21 @@ func (e *EvaluateUrl) Execute(url *domain.Url, httpOK bool) error {
 		} else {		
 			url.StabilityCount++
 		}
-
+		return nil
 	case url.Status == domain.StatusRecovering && !httpOK:
 		url.Status = domain.StatusDegraded
 		url.StabilityCount = 0
 		url.RetryCount = 1
-
+		return nil
 	case url.Status == domain.StatusDown && httpOK:
 		url.Status = domain.StatusRecovering
 		url.DownCount = 0
 		url.StabilityCount = 1
-
+		return nil
 	case url.Status == domain.StatusDown && !httpOK:
 		url.DownCount++
-	
+		return nil
 	default:
 		return fmt.Errorf("evaluateUrl: %w", errors.New("unhandled url status transition"))
 	}
-	return nil
 }

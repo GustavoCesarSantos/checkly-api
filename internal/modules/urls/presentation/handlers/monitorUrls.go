@@ -8,7 +8,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
-	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
 	"GustavoCesarSantos/checkly-api/internal/shared/logger"
 	"GustavoCesarSantos/checkly-api/internal/shared/utils"
@@ -110,7 +109,7 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 				)
 				return scheduleErr
 			}
-			if(u.Status == domain.StatusDown) {
+			if u.WentDownNow {
 				updateErr := m.updateUrlWithOutbox.Execute(ctx, *u, dtos.UpdateUrlRequest{
 					NextCheck:      u.NextCheck,
 					RetryCount:     &u.RetryCount,
