@@ -28,10 +28,9 @@ type HealthCheckEnvelope struct {
 // @Failure      500      {object}  utils.ErrorEnvelope "Internal server error"
 // @Router      /health [get]
 func (h *Healthcheck) Handle(w http.ResponseWriter, r *http.Request) {
-	metadataErr := utils.Envelope{
-		"file": "healthcheck.go",
-		"func": "healthcheck.Handle",
-		"line": 0,
+	metadataErr := utils.MetadataErr{
+		Who:   "healthcheck.go",
+		Where: "Healthcheck.Handle",
 	}
 	serverConfig := configs.LoadServerConfig()
 	response := dtos.NewHealthCheckResponse("available", serverConfig.Env, time.Now().UTC().Format(time.RFC3339))

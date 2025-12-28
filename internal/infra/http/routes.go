@@ -27,18 +27,15 @@ func routes(sqlDB *sql.DB) http.Handler {
 	
 	router := httprouter.New()
 
-	metadataErr := utils.Envelope{
-		"file": "routes.go",
-		"func": "routes.routes",
-		"line": 0,
+	metadataErr := utils.MetadataErr{
+		Who:   "routes.go",
+		Where: "routes",
 	}
 
 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		metadataErr["line"] = 42
 		utils.NotFoundResponse(w, r, metadataErr)
 	})
 	router.MethodNotAllowed = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		metadataErr["line"] = 47
 		utils.MethodNotAllowedResponse(w, r, metadataErr)
 	})
 

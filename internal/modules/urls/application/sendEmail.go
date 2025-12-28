@@ -1,9 +1,10 @@
 package application
 
 import (
+	"fmt"
+
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	"GustavoCesarSantos/checkly-api/internal/shared/mailer"
-	"log/slog"
 )
 
 type SendEmail struct {
@@ -20,9 +21,7 @@ func (s *SendEmail) Execute(payload domain.Payload) error {
 	}
 	err := s.mailer.Send(payload.Email, "alert_url_down.tmpl", data)
 	if err != nil {
-		slog.Warn("failed to send email", "to", payload.Email, "error", err.Error())
-		return err
+		return fmt.Errorf("sendEmail: %w", err)
 	}
-	slog.Info("email sent successfully", "to", payload.Email)
 	return nil
 }

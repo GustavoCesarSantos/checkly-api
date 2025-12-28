@@ -80,8 +80,8 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 					"Check URL failed",
 					"monitor-worker",
 					"monitor_urls.Handle",
-					"url", u.Address,
 					"error", checkErr,
+					"url", u.Address,
 				)
 				return checkErr
 			}

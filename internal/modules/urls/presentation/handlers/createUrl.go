@@ -37,10 +37,9 @@ type CreateUrlEnvelop struct {
 // @Failure      500      {object}  utils.ErrorEnvelope "Internal server error"
 // @Router      /urls [post]
 func (c *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
-	metadataErr := utils.Envelope{
-		"file": "createUrl.go",
-		"func": "createUrl.Handle",
-		"line": 0,
+	metadataErr := utils.MetadataErr{
+		Who:   "createdUrl.go",
+		Where: "CreateUrl.Handle",
 	}
 	var input dtos.CreateUrlRequest
 	readErr := utils.ReadJSON(w, r, &input)
