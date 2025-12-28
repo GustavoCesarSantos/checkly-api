@@ -14,7 +14,6 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
     "basePath": "/v1",
     "paths": {
         "/health": {
@@ -131,15 +130,13 @@
                 10,
                 20,
                 25,
-                30,
-                40
+                30
             ],
             "x-enum-varnames": [
                 "StatusHealthy",
                 "StatusDegraded",
                 "StatusRecovering",
-                "StatusDown",
-                "StatusNotified"
+                "StatusDown"
             ]
         },
         "GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlRequest": {

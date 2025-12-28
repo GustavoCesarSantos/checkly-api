@@ -11,7 +11,6 @@ const (
 	StatusDegraded   UrlStatus = 20
 	StatusRecovering UrlStatus = 25
 	StatusDown       UrlStatus = 30
-	StatusNotified   UrlStatus = 40
 )
 
 type Url struct {
@@ -21,6 +20,7 @@ type Url struct {
 	Interval       int
 	RetryLimit     int
 	RetryCount     int
+	DownCount	   int
 	StabilityCount int
 	Contact        string
 	NextCheck      *time.Time
@@ -45,4 +45,21 @@ func NewUrl(
 		Status:     status,
 		NextCheck:  &nextCheck,
 	}
+}
+
+func (u Url) Backoff() time.Duration {
+	steps := []time.Duration{
+		1 * time.Minute,
+		2 * time.Minute,
+		5 * time.Minute,
+		10 * time.Minute,
+		30 * time.Minute,
+	}
+	if u.DownCount <= 0 {
+		return steps[0]
+	}
+	if u.DownCount > len(steps) {
+		return steps[len(steps)-1]
+	}
+	return steps[u.DownCount-1]
 }

@@ -137,15 +137,13 @@ const docTemplate = `{
                 10,
                 20,
                 25,
-                30,
-                40
+                30
             ],
             "x-enum-varnames": [
                 "StatusHealthy",
                 "StatusDegraded",
                 "StatusRecovering",
-                "StatusDown",
-                "StatusNotified"
+                "StatusDown"
             ]
         },
         "GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlRequest": {
@@ -215,7 +213,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "",
 	BasePath:         "/v1",
 	Schemes:          []string{},
 	Title:            "Checkly API",

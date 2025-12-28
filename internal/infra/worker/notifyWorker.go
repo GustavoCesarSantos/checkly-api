@@ -29,7 +29,6 @@ func NewNotifyWorker(sqlDB *sql.DB, concurrency int) *NotifyWorker {
 		mailerConfigs.Sender,
 	)
 	alertRepo := db.NewAlertOutboxRepository(sqlDB)
-	urlRepo := db.NewUrlRepository(sqlDB)
 	return &NotifyWorker{
 		interval: 1 * time.Minute,
 		concurrency: concurrency,
@@ -38,7 +37,6 @@ func NewNotifyWorker(sqlDB *sql.DB, concurrency int) *NotifyWorker {
 			application.NewMarkSent(alertRepo),
 			application.NewSendEmail(m),
 			application.NewScheduleRetryAlert(alertRepo),
-			urlRepo,
 		),
 	}
 }

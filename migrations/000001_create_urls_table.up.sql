@@ -7,6 +7,7 @@ CREATE TABLE urls (
     interval integer NOT NULL,
     retry_limit integer NOT NULL,
     retry_count integer NOT NULL DEFAULT 0,
+    down_count integer NOT NULL DEFAULT 0,
     stability_count integer NOT NULL DEFAULT 0,
     contact text NOT NULL,
     next_check timestamp(0) with time zone NOT NULL,
@@ -15,4 +16,4 @@ CREATE TABLE urls (
     updated_at timestamp(0) with time zone NULL
 );
 
-CREATE INDEX idx_urls_next_check_status ON urls (next_check, status);
+CREATE INDEX idx_urls_next_check ON urls (next_check);

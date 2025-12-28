@@ -39,8 +39,7 @@ func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.T
         FROM
             urls
         WHERE
-            next_check <= $1
-            AND status NOT IN (30, 40);
+            next_check <= $1;
     `
 	rows, err := u.DB.QueryContext(ctx, query, nextCheck)
 	if err != nil {
@@ -154,31 +153,6 @@ func (u *urlRepository) Update(ctx context.Context, urlId int64, params db.Updat
 	}
 	if rowsAffected == 0 {
 		return utils.ErrRecordNotFound
-	}
-	return nil
-}
-
-func (u *urlRepository) UpdateToNotified(ctx context.Context, urlId int64) error {
-	query := `
-		UPDATE 
-			urls
-		SET 
-			status = 40,
-			updated_at = NOW()
-		WHERE 
-			id = $1
-			AND status = 30;
-	`
-	result, err := u.DB.ExecContext(ctx, query, urlId)
-	if err != nil {
-		return err
-	}
-	rowsAffected, rowsAffectedErr := result.RowsAffected()
-	if rowsAffectedErr != nil {
-		return rowsAffectedErr
-	}
-	if rowsAffected == 0 {
-		return nil
 	}
 	return nil
 }

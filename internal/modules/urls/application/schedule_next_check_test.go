@@ -13,8 +13,8 @@ func TestScheduleNextCheck_NextCheck_UsesInterval_WhenHttpOk(t *testing.T) {
 		Interval: 5,
 	}
 	sut := NewScheduleNextCheck()
-	sut.Execute(url, true, now)
-	if url.NextCheck == nil {
+	err := sut.Execute(url, now)
+	if err != nil {
 		t.Fatal("expected NextCheck to be set")
 	}
 	expectedMin := now.Add(5 * time.Minute)
@@ -31,7 +31,7 @@ func TestScheduleNextCheck_NextCheck_OneMinute_WhenHttpFails(t *testing.T) {
 		Interval: 10,
 	}
 	sut := NewScheduleNextCheck()
-	sut.Execute(url, false, now)
+	sut.Execute(url, now)
 	if url.NextCheck == nil {
 		t.Fatal("expected NextCheck to be set")
 	}

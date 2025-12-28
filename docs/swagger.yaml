@@ -23,14 +23,12 @@ definitions:
     - 20
     - 25
     - 30
-    - 40
     type: integer
     x-enum-varnames:
     - StatusHealthy
     - StatusDegraded
     - StatusRecovering
     - StatusDown
-    - StatusNotified
   GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlRequest:
     properties:
       address:
@@ -72,7 +70,6 @@ definitions:
       url:
         $ref: '#/definitions/GustavoCesarSantos_checkly-api_internal_modules_urls_presentation_dtos.CreateUrlResponse'
     type: object
-host: localhost:8080
 info:
   contact:
     email: gustavocs789@gmail.com

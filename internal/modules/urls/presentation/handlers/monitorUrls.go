@@ -85,8 +85,28 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 				)
 				return checkErr
 			}
-			m.evaluateUrl.Execute(u, result.IsSuccess)
-			m.scheduleNextCheck.Execute(u, result.IsSuccess, time.Now())
+			evaluateErr := m.evaluateUrl.Execute(u, result.IsSuccess)
+			if evaluateErr != nil {
+				logger.Error(
+					"Failed to evaluate url",
+					"monitor-worker",
+					"monitor_urls.Handle",
+					evaluateErr,
+					"url entity", u,
+				)
+				return evaluateErr
+			}
+			scheduleErr := m.scheduleNextCheck.Execute(u, time.Now())
+			if scheduleErr != nil {
+				logger.Error(
+					"Failed to schedule next check",
+					"monitor-worker",
+					"monitor_urls.Handle",
+					scheduleErr,
+					"url entity", u,
+				)
+				return scheduleErr
+			}
 			if(u.Status == domain.StatusDown) {
 				updateErr := m.updateUrlWithOutbox.Execute(ctx, *u, dtos.UpdateUrlRequest{
 					NextCheck:      u.NextCheck,

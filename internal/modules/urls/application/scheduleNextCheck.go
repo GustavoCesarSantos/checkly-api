@@ -1,6 +1,8 @@
 package application
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
@@ -12,10 +14,21 @@ func NewScheduleNextCheck() *ScheduleNextCheck {
 	return &ScheduleNextCheck{}
 }
 
-func (s *ScheduleNextCheck) Execute(url *domain.Url, httpOK bool, now time.Time) {
-	nextCheck := now.Add(time.Duration(url.Interval) * time.Minute)
-	if !httpOK {
-		nextCheck = now.Add(1 * time.Minute)
+func (s *ScheduleNextCheck) Execute(url *domain.Url, now time.Time) error {
+	if url.Status == domain.StatusHealthy {
+		nextCheck := now.Add(time.Duration(url.Interval) * time.Minute)
+		url.NextCheck = &nextCheck
+		return nil
 	}
-	url.NextCheck = &nextCheck
+	if url.Status == domain.StatusDegraded || url.Status == domain.StatusRecovering {
+		nextCheck := now.Add(1 * time.Minute)
+		url.NextCheck = &nextCheck
+		return nil
+	}
+	if url.Status == domain.StatusDown {
+		nextCheck := now.Add(url.Backoff())
+		url.NextCheck = &nextCheck
+		return nil
+	}
+	return fmt.Errorf("scheduleNextCheck: %w", errors.New("failed to schedule next check: unknown status"))
 }
