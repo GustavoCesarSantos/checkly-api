@@ -42,7 +42,9 @@ func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.T
         WHERE
             next_check <= $1;
     `
-	rows, err := u.DB.QueryContext(ctx, query, nextCheck)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	rows, err := u.DB.QueryContext(queryCtx, query, nextCheck)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +76,7 @@ func (u *urlRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.T
 	return urls, nil
 }
 
-func (u *urlRepository) Save(url *domain.Url) error {
+func (u *urlRepository) Save(ctx context.Context, url *domain.Url) error {
 	query := `
         INSERT INTO urls (
             address,
@@ -104,9 +106,9 @@ func (u *urlRepository) Save(url *domain.Url) error {
 		url.Status,
 		url.NextCheck,
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	return u.DB.QueryRowContext(ctx, query, args...).Scan(
+	return u.DB.QueryRowContext(queryCtx, query, args...).Scan(
 		&url.ExternalID,
 		&url.CreatedAt,
 	)
@@ -151,7 +153,9 @@ func (u *urlRepository) Update(ctx context.Context, urlId int64, params db.Updat
 	query += " updated_at = NOW()"
 	query = strings.TrimSuffix(query, ",") + " WHERE id = $" + strconv.Itoa(argPos)
 	args = append(args, urlId)
-	result, err := u.DB.ExecContext(ctx, query, args...)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	result, err := u.DB.ExecContext(queryCtx, query, args...)
 	if err != nil {
 		return err
 	}

@@ -41,6 +41,7 @@ func (c *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		Who:   "createdUrl.go",
 		Where: "CreateUrl.Handle",
 	}
+	ctx := r.Context()
 	var input dtos.CreateUrlRequest
 	readErr := utils.ReadJSON(w, r, &input)
 	if readErr != nil {
@@ -52,12 +53,12 @@ func (c *CreateUrl) Handle(w http.ResponseWriter, r *http.Request) {
 		utils.FailedValidationResponse(w, r, v.Errors, metadataErr)
 		return
 	}
-	checkResult, checkErr := c.checkUrl.Execute(input.Address)
+	checkResult, checkErr := c.checkUrl.Execute(ctx, input.Address)
 	if checkErr != nil {
 		utils.ServerErrorResponse(w, r, utils.ErrFailedCheckUrl, metadataErr)
 		return
 	}
-	url, saveErr := c.saveUrl.Execute(input, checkResult.IsSuccess)
+	url, saveErr := c.saveUrl.Execute(ctx, input, checkResult.IsSuccess)
 	if saveErr != nil {
 		utils.ServerErrorResponse(w, r, saveErr, metadataErr)
 		return

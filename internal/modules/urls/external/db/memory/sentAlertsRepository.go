@@ -29,7 +29,7 @@ func NewSentAlertsRepository() db.ISentAlertsRepository {
 	}
 }
 
-func (r *sentAlertsRepository) Save(idempotencyKey string) error {
+func (r *sentAlertsRepository) Save(ctx context.Context, idempotencyKey string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	alert := sentAlerts{

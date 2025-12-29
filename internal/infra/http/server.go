@@ -40,23 +40,11 @@ func Server(db *sql.DB, wg *sync.WaitGroup) error {
 	)
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
-		logger.Error(
-			"could not start server",
-			"server.go",
-			"Server",
-			err,
-		)
-		return err
+		return fmt.Errorf("server: %w", err)
 	}
 	err = <-shutdownError
 	if err != nil {
-		logger.Error(
-			"could not gracefully shutdown the server",
-			"server.go",
-			"Server",
-			err,
-		)
-		return err
+		return fmt.Errorf("server: %w", err)
 	}
 	logger.Info(
 		"server stopped",

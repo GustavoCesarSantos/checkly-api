@@ -41,7 +41,7 @@ func (r *urlRepository) FindAllByNextCheck(
 	return result, nil
 }
 
-func (r *urlRepository) Save(url *domain.Url) error {
+func (r *urlRepository) Save(ctx context.Context, url *domain.Url) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	url.ID = r.next

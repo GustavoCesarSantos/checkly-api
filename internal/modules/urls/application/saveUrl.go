@@ -1,6 +1,8 @@
 package application
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
@@ -39,7 +41,7 @@ func NewSaveUrl(urlRepository db.IUrlRepository) *SaveUrl {
 //
 // Retorna a entidade criada ou erro em caso de falha
 // na persistência.
-func (s *SaveUrl) Execute(input dtos.CreateUrlRequest, isHealthy bool) (*domain.Url, error) {
+func (s *SaveUrl) Execute(ctx context.Context, input dtos.CreateUrlRequest, isHealthy bool) (*domain.Url, error) {
 	status := domain.StatusHealthy
 	nextCheck := time.Now().Add(time.Duration(input.Interval) * time.Minute)
 	if !isHealthy {
@@ -54,9 +56,9 @@ func (s *SaveUrl) Execute(input dtos.CreateUrlRequest, isHealthy bool) (*domain.
 		status,
 		nextCheck,
 	)
-	err := s.urlRepository.Save(url)
+	err := s.urlRepository.Save(ctx, url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("saveUrl: %w", err)
 	}
 	return url, nil
 }

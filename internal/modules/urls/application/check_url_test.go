@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"errors"
 	"net"
 	"net/http"
@@ -15,7 +16,7 @@ func TestCheckUrl_Execute_Success(t *testing.T) {
 	}))
 	defer server.Close()
 	sut := NewCheckUrl()
-	result, err := sut.Execute(server.URL)
+	result, err := sut.Execute(context.Background(), server.URL)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -33,7 +34,7 @@ func TestCheckUrl_Execute_StatusCodeError(t *testing.T) {
 	}))
 	defer server.Close()
 	sut := NewCheckUrl()
-	result, err := sut.Execute(server.URL)
+	result, err := sut.Execute(context.Background(), server.URL)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -52,7 +53,7 @@ func TestCheckUrl_Execute_StatusCodeError(t *testing.T) {
 func TestCheckUrl_Execute_InvalidURL(t *testing.T) {
 	sut := NewCheckUrl()
 	invalidURL := "http://invalid-url"
-	_, err := sut.Execute(invalidURL)
+	_, err := sut.Execute(context.Background(), invalidURL)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
@@ -65,7 +66,7 @@ func TestCheckUrl_Execute_Timeout(t *testing.T) {
 	}))
 	defer server.Close()
 	sut := NewCheckUrl()
-	_, err := sut.Execute(server.URL)
+	_, err := sut.Execute(context.Background(), server.URL)
 	if err == nil {
 		t.Fatal("expected timeout error, got nil")
 	}

@@ -20,7 +20,7 @@ func NewSentAlertsRepository(db *sql.DB) db.ISentAlertsRepository {
 	}
 }
 
-func (a *sentAlertsRepository) Save(idempotencyKey string) error {
+func (a *sentAlertsRepository) Save(ctx context.Context, idempotencyKey string) error {
 	query := `
         INSERT INTO sent_alerts (
             idempotency_key
@@ -29,9 +29,9 @@ func (a *sentAlertsRepository) Save(idempotencyKey string) error {
             $1
         )
     `
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	return a.DB.QueryRowContext(ctx, query, idempotencyKey).Err()
+	return a.DB.QueryRowContext(queryCtx, query, idempotencyKey).Err()
 }
 
 func (a *sentAlertsRepository) Update(ctx context.Context, idempotencyKey string, status domain.AlertStatus) error {
@@ -48,7 +48,9 @@ func (a *sentAlertsRepository) Update(ctx context.Context, idempotencyKey string
 		status,
 		idempotencyKey,
 	}
-	result, err := a.DB.ExecContext(ctx, query, args...)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	result, err := a.DB.ExecContext(queryCtx, query, args...)
 	if err != nil {
 		return err
 	}

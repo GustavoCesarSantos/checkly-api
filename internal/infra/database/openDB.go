@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -14,7 +15,7 @@ func OpenDB() (*sql.DB, error) {
 	var databaseConfig = configs.LoadDatabaseConfig()
 	db, err := sql.Open("postgres", databaseConfig.Dsn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("openDB: %w", err)
 	}
 	db.SetMaxOpenConns(databaseConfig.MaxOpenConns)
 	db.SetMaxIdleConns(databaseConfig.MaxIdleConns)
@@ -24,7 +25,7 @@ func OpenDB() (*sql.DB, error) {
 	pingErr := db.PingContext(ctx)
 	if pingErr != nil {
 		db.Close()
-		return nil, pingErr
+		return nil, fmt.Errorf("openDB: %w", pingErr)
 	}
 	return db, nil
 }

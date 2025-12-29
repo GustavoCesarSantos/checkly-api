@@ -9,7 +9,7 @@ import (
 
 type IAlertOutboxRepository interface {
 	FindAllPendingAlerts(ctx context.Context, limit int) ([]domain.AlertOutbox, error)
-	Save(alert *domain.AlertOutbox) error
+	Save(ctx context.Context, alert *domain.AlertOutbox) error
 	Update(ctx context.Context, alertId int64, sentAt time.Time) error
 	UpdateRetryInfo(ctx context.Context, alertId int64) error
 }

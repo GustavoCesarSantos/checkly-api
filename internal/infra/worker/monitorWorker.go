@@ -3,19 +3,20 @@ package worker
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 	"time"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/nativeSQL"
 	urls "GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/handlers"
 	unitOfWork_withDB "GustavoCesarSantos/checkly-api/internal/modules/urls/utils/unitOfWork/repositoryUnitOfWork/withDB"
+	"GustavoCesarSantos/checkly-api/internal/shared/logger"
 )
 
 type MonitorWorker struct {
 	interval    time.Duration
 	concurrency int
 	monitor     *urls.MonitorUrls
+	running		chan struct{}
 }
 
 func NewMonitorWorker(sqlDB *sql.DB, concurrency int) *MonitorWorker {
@@ -24,6 +25,7 @@ func NewMonitorWorker(sqlDB *sql.DB, concurrency int) *MonitorWorker {
 	return &MonitorWorker{
 		interval:    1 * time.Minute,
 		concurrency: concurrency,
+		running: make(chan struct{}, 1),
 		monitor: urls.NewMonitorUrls(
 			application.NewCheckUrl(),
 			application.NewEvaluateUrl(),
@@ -38,29 +40,84 @@ func NewMonitorWorker(sqlDB *sql.DB, concurrency int) *MonitorWorker {
 func (w *MonitorWorker) Start(ctx context.Context) {
 	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
-	slog.Info("Started", "interval", w.interval.String(), "concurrency", w.concurrency)
+	logger.InfoContext(
+		ctx,
+		"Monitor worker started",
+		"monitorWorker.go",
+		"Start",
+		"interval", w.interval.String(), 
+		"concurrency", w.concurrency,
+	)
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("Stopped")
+			w.waitForRunning()
+			logger.InfoContext(
+				ctx,
+				"Monitor worker stopped",
+				"monitorWorker.go",
+				"Start",
+			)
 			return
 		case <-ticker.C:
-			slog.Info("Tick")
-			w.safeProcess(ctx)
+			select {
+			case w.running <- struct{}{}:
+				logger.InfoContext(
+					ctx,
+					"Monitor worker tick",
+					"monitorWorker.go",
+					"Start",
+				)
+				go w.runCycle(ctx)
+			default:
+				logger.WarnContext(
+					ctx,
+					"Previous monitor worker cycle still running, skipping this tick",
+					"monitorWorker.go",
+					"Start",
+				)
+			}
 		}
 	}
 }
 
-func (w *MonitorWorker) safeProcess(ctx context.Context) {
+func (w *MonitorWorker) waitForRunning() {
+	select {
+	case w.running <- struct{}{}:
+		<-w.running
+	default:
+	}
+}
+
+func (w *MonitorWorker) runCycle(ctx context.Context) {
 	defer func() {
+		<-w.running
 		if r := recover(); r != nil {
-			slog.Error("Recovered from panic", "panic", r)
+			logger.Warn(
+				"recovered from panic",
+				"monitorWorker.go",
+				"runCycle",
+				"panic", r,
+			)
 		}
 	}()
-	err := w.monitor.Handle(ctx, w.concurrency)
+	cycleCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	err := w.monitor.Handle(cycleCtx, w.concurrency)
 	if err != nil {
-		slog.Error("Process error", "error", err)
-	} else {
-		slog.Info("Cycle completed successfully")
+		logger.ErrorContext(
+			cycleCtx,
+			"failed to process monitor worker",
+			"monitorWorker.go",
+			"runCycle",
+			err,
+		)
+		return
 	}
+	logger.InfoContext(
+		cycleCtx,
+		"monitor worker completed successfully",
+		"monitorWorker.go",
+		"runCycle",
+	)
 }

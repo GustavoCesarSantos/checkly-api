@@ -41,11 +41,14 @@ func NewMonitorUrls(
 }
 
 func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
-	urls, err := m.fetchUrls.Execute(ctx, time.Now())
+	opCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	now := time.Now()
+	urls, err := m.fetchUrls.Execute(opCtx, now)
 	if err != nil {
 		if errors.Is(err, utils.ErrRecordNotFound) {
 			logger.InfoContext(
-				ctx,
+				opCtx,
 				"No pending urls found",
 				"monitor-worker",
 				"monitor_urls.Handle",
@@ -53,7 +56,7 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 			return nil
 		}
 		logger.ErrorContext(
-			ctx,
+			opCtx,
 			"Failed to fetch pending urls",
 			"monitor-worker",
 			"monitor_urls.Handle",
@@ -62,55 +65,57 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 		return err
 	}
 	logger.InfoContext(
-		ctx,
+		opCtx,
 		"Starting URL monitoring",
 		"monitor-worker",
 		"monitor_urls.Handle",
 		"count", len(urls),
 	)
-	g, ctx := errgroup.WithContext(ctx)
+	g, ctx := errgroup.WithContext(opCtx)
 	g.SetLimit(concurrency)
 	for i := range urls {
 		u := &urls[i]
 		g.Go(func() error {
-			result, checkErr := m.checkUrl.Execute(u.Address)
+			urlCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+			defer cancel()
+			result, checkErr := m.checkUrl.Execute(urlCtx, u.Address)
 			if checkErr != nil {
 				logger.WarnContext(
-					ctx,
+					urlCtx,
 					"Check URL failed",
 					"monitor-worker",
 					"monitor_urls.Handle",
 					"error", checkErr,
 					"url", u.Address,
 				)
-				return checkErr
+				return nil
 			}
 			evaluateErr := m.evaluateUrl.Execute(u, result.IsSuccess)
 			if evaluateErr != nil {
 				logger.ErrorContext(
-					ctx,
+					urlCtx,
 					"Failed to evaluate url",
 					"monitor-worker",
 					"monitor_urls.Handle",
 					evaluateErr,
 					"url entity", u,
 				)
-				return evaluateErr
+				return nil
 			}
-			scheduleErr := m.scheduleNextCheck.Execute(u, time.Now())
+			scheduleErr := m.scheduleNextCheck.Execute(u, now)
 			if scheduleErr != nil {
 				logger.ErrorContext(
-					ctx,
+					urlCtx,
 					"Failed to schedule next check",
 					"monitor-worker",
 					"monitor_urls.Handle",
 					scheduleErr,
 					"url entity", u,
 				)
-				return scheduleErr
+				return nil
 			}
 			if u.WentDownNow {
-				updateErr := m.updateUrlWithOutbox.Execute(ctx, *u, dtos.UpdateUrlRequest{
+				updateErr := m.updateUrlWithOutbox.Execute(urlCtx, *u, dtos.UpdateUrlRequest{
 					NextCheck:      u.NextCheck,
 					RetryCount:     &u.RetryCount,
 					DownCount:		&u.DownCount,
@@ -119,18 +124,17 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 				})
 				if updateErr != nil {
 					logger.ErrorContext(
-						ctx,
+						urlCtx,
 						"Failed to update url with outbox",
 						"monitor-worker",
 						"monitor_urls.Handle",
 						updateErr,
 						"url entity", u,
 					)
-					return updateErr
 				}
 				return nil
 			}
-			updateErr := m.updateUrl.Execute(ctx, u.ID, dtos.UpdateUrlRequest{
+			updateErr := m.updateUrl.Execute(urlCtx, u.ID, dtos.UpdateUrlRequest{
 				NextCheck:      u.NextCheck,
 				RetryCount:     &u.RetryCount,
 				DownCount:		&u.DownCount,
@@ -139,14 +143,13 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 			})
 			if updateErr != nil {
 				logger.ErrorContext(
-					ctx,
+					urlCtx,
 					"Failed to update url",
 					"monitor-worker",
 					"monitor_urls.Handle",
 					updateErr,
 					"url entity", u,
 				)
-				return updateErr
 			}
 			return nil
 		})

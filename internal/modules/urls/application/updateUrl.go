@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"fmt"
 
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/dtos"
@@ -41,7 +42,7 @@ func (u *UpdateUrl) Execute(ctx context.Context, urlId int64, input dtos.UpdateU
 	}
 	err := u.urlRepository.Update(ctx, urlId, params)
 	if err != nil {
-		return err
+		return fmt.Errorf("updateUrl: %w", err)
 	}
 	return nil
 }

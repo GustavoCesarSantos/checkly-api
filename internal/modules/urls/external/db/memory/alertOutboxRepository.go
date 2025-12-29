@@ -35,7 +35,7 @@ func (r *alertOutboxRepository) FindAllPendingAlerts(ctx context.Context, limit 
 	return result, nil
 }
 
-func (r *alertOutboxRepository) Save(alertOutbox *domain.AlertOutbox) error {
+func (r *alertOutboxRepository) Save(ctx context.Context, alertOutbox *domain.AlertOutbox) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	alertOutbox.ID = r.next

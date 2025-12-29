@@ -20,12 +20,12 @@ func (f *failingUpdateRepository) FindAllByNextCheck(context.Context, time.Time)
 	panic("not used")
 }
 
-func (f *failingUpdateRepository) Save(*domain.Url) error {
+func (f *failingUpdateRepository) Save(ctx context.Context, url *domain.Url) error {
 	panic("not used")
 }
 
 func (f *failingUpdateRepository) Update(
-	_ context.Context,
+	ctx context.Context,
 	_ int64,
 	_ db.UpdateUrlParams,
 ) error {
@@ -51,7 +51,7 @@ func TestUpdateUrl_Execute_UpdateFields(t *testing.T) {
 		time.Now(),
 	)
 
-	if err := repo.Save(url); err != nil {
+	if err := repo.Save(ctx, url); err != nil {
 		t.Fatalf("failed to save url: %v", err)
 	}
 
@@ -126,7 +126,7 @@ func TestUpdateUrl_Execute_DoesNotOverrideNilFields(t *testing.T) {
 		originalNextCheck,
 	)
 
-	if err := repo.Save(url); err != nil {
+	if err := repo.Save(ctx, url); err != nil {
 		t.Fatalf("failed to save url: %v", err)
 	}
 

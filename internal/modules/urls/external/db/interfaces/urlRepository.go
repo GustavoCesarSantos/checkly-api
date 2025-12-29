@@ -17,6 +17,6 @@ type UpdateUrlParams struct {
 
 type IUrlRepository interface {
 	FindAllByNextCheck(ctx context.Context, nextCheck time.Time) ([]domain.Url, error)
-	Save(url *domain.Url) error
+	Save(ctx context.Context, url *domain.Url) error
 	Update(ctx context.Context, urlId int64, params UpdateUrlParams) error
 }

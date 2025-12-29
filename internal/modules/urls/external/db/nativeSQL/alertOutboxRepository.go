@@ -36,7 +36,9 @@ func (a *alertOutboxRepository) FindAllPendingAlerts(ctx context.Context, limit 
 		LIMIT $1
 		FOR UPDATE SKIP LOCKED;
     `
-	rows, err := a.DB.QueryContext(ctx, query, limit)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	rows, err := a.DB.QueryContext(queryCtx, query, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +62,7 @@ func (a *alertOutboxRepository) FindAllPendingAlerts(ctx context.Context, limit 
 	return alerts, nil
 }
 
-func (a *alertOutboxRepository) Save(alert *domain.AlertOutbox) error {
+func (a *alertOutboxRepository) Save(ctx context.Context, alert *domain.AlertOutbox) error {
 	query := `
         INSERT INTO alert_outbox (
             url_id,
@@ -75,9 +77,9 @@ func (a *alertOutboxRepository) Save(alert *domain.AlertOutbox) error {
 		alert.UrlId,
 		alert.Payload,
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	return a.DB.QueryRowContext(ctx, query, args...).Err()
+	return a.DB.QueryRowContext(queryCtx, query, args...).Err()
 }
 
 func (a *alertOutboxRepository) Update(ctx context.Context, alertId int64, sentAt time.Time) error {
@@ -94,7 +96,9 @@ func (a *alertOutboxRepository) Update(ctx context.Context, alertId int64, sentA
 		sentAt,
 		alertId,
 	}
-	result, err := a.DB.ExecContext(ctx, query, args...)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	result, err := a.DB.ExecContext(queryCtx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -119,7 +123,9 @@ func (a *alertOutboxRepository) UpdateRetryInfo(ctx context.Context, alertId int
         WHERE 
 			id = $1
 	`
-	result, err := a.DB.ExecContext(ctx, query, alertId)
+	queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	result, err := a.DB.ExecContext(queryCtx, query, alertId)
 	if err != nil {
 		return err
 	}

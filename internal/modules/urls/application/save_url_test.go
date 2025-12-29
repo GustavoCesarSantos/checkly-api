@@ -15,11 +15,11 @@ type failingRepository struct{}
 
 var errSave = errors.New("save failed")
 
-func (f *failingRepository) Save(url *domain.Url) error {
+func (f *failingRepository) Save(ctx context.Context, url *domain.Url) error {
 	return errSave
 }
 
-func (f *failingRepository) FindAllByNextCheck(_ context.Context, _ time.Time) ([]domain.Url, error) {
+func (f *failingRepository) FindAllByNextCheck(ctx context.Context, nextCheck time.Time) ([]domain.Url, error) {
 	panic("not used")
 }
 
@@ -41,7 +41,7 @@ func TestSaveUrl_Execute_Healthy(t *testing.T) {
 		Contact:    "admin@example.com",
 	}
 	now := time.Now()
-	url, err := sut.Execute(input, true)
+	url, err := sut.Execute(context.Background(), input, true)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -71,7 +71,7 @@ func TestSaveUrl_Execute_Degraded(t *testing.T) {
 		Contact:    "admin@example.com",
 	}
 	now := time.Now()
-	url, err := sut.Execute(input, false)
+	url, err := sut.Execute(context.Background(),input, false)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -94,7 +94,7 @@ func TestSaveUrl_Execute_WhenRepositoryFails(t *testing.T) {
 		RetryLimit: 3,
 		Contact:    "admin@example.com",
 	}
-	url, err := sut.Execute(input, true)
+	url, err := sut.Execute(context.Background(), input, true)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}

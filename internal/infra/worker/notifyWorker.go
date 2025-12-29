@@ -3,13 +3,13 @@ package worker
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 	"time"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/application"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/nativeSQL"
 	urls "GustavoCesarSantos/checkly-api/internal/modules/urls/presentation/handlers"
 	"GustavoCesarSantos/checkly-api/internal/shared/configs"
+	"GustavoCesarSantos/checkly-api/internal/shared/logger"
 	"GustavoCesarSantos/checkly-api/internal/shared/mailer"
 )
 
@@ -17,6 +17,7 @@ type NotifyWorker struct {
 	interval time.Duration
 	concurrency int
 	notifyCustomer *urls.NotifyCustomer
+	running		chan struct{}
 }
 
 func NewNotifyWorker(sqlDB *sql.DB, concurrency int) *NotifyWorker {
@@ -32,6 +33,7 @@ func NewNotifyWorker(sqlDB *sql.DB, concurrency int) *NotifyWorker {
 	return &NotifyWorker{
 		interval: 1 * time.Minute,
 		concurrency: concurrency,
+		running: make(chan struct{}, 1),
 		notifyCustomer: urls.NewNotifyCustomer(
 			application.NewFetchPendingAlerts(alertRepo),
 			application.NewMarkSent(alertRepo),
@@ -44,29 +46,84 @@ func NewNotifyWorker(sqlDB *sql.DB, concurrency int) *NotifyWorker {
 func (w *NotifyWorker) Start(ctx context.Context) {
 	ticker := time.NewTicker(w.interval)
 	defer ticker.Stop()
-	slog.Info("[NOTIFY WORKER] NotifyWorker Started", "interval", w.interval.String(), "concurrency", w.concurrency)
+	logger.InfoContext(
+		ctx,
+		"Notify worker started",
+		"notifyWorker.go",
+		"Start",
+		"interval", w.interval.String(), 
+		"concurrency", w.concurrency,
+	)
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("[NOTIFY WORKER] NotifyWorker Stopped")
+			w.waitForRunning()
+			logger.InfoContext(
+				ctx,
+				"Notify worker stopped",
+				"notifyWorker.go",
+				"Start",
+			)
 			return
 		case <-ticker.C:
-			slog.Info("[NOTIFY WORKER] NotifyWorker Tick")
-			w.safeProcess(ctx)
+			select {
+			case w.running <- struct{}{}:
+				logger.InfoContext(
+					ctx,
+					"Notify worker tick",
+					"notifyWorker.go",
+					"Start",
+				)
+				go w.runCycle(ctx)
+			default:
+				logger.WarnContext(
+					ctx,
+					"Previous notify worker cycle still running, skipping this tick",
+					"notifyWorker.go",
+					"Start",
+				)
+			}
 		}
 	}
 }
 
-func (w *NotifyWorker) safeProcess(ctx context.Context) {
+func (w *NotifyWorker) waitForRunning() {
+	select {
+	case w.running <- struct{}{}:
+		<-w.running
+	default:
+	}
+}
+
+func (w *NotifyWorker) runCycle(ctx context.Context) {
 	defer func() {
+		<-w.running
 		if r := recover(); r != nil {
-			slog.Error("[NOTIFY WORKER] Recovered from panic", "panic", r)
+			logger.Warn(
+				"recovered from panic",
+				"notifyWorker.go",
+				"runCycle",
+				"panic", r,
+			)
 		}
 	}()
-	err := w.notifyCustomer.Handle(ctx, w.concurrency)
+	cycleCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	err := w.notifyCustomer.Handle(cycleCtx, w.concurrency)
 	if err != nil {
-		slog.Error("[NOTIFY WORKER] Process error", "error", err)
-	} else {
-		slog.Info("[NOTIFY WORKER] Cycle completed successfully")
+		logger.ErrorContext(
+			cycleCtx,
+			"failed to process notify worker",
+			"notifyWorker.go",
+			"runCycle",
+			err,
+		)
+		return
 	}
+	logger.InfoContext(
+		ctx,
+		"notify worker completed successfully",
+		"notifyWorker.go",
+		"runCycle",
+	)
 }

@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"fmt"
 
 	"GustavoCesarSantos/checkly-api/internal/modules/urls/domain"
 	db "GustavoCesarSantos/checkly-api/internal/modules/urls/external/db/interfaces"
@@ -29,9 +30,9 @@ func (u *UpdateUrlWithOutbox) Execute(ctx context.Context, url domain.Url, input
 			StabilityCount: input.StabilityCount,
 			Status:         input.Status,
 		}
-		err := f.Urls().Update(ctx, url.ID, params)
-		if err != nil {
-			return err
+		updateErr := f.Urls().Update(ctx, url.ID, params)
+		if updateErr != nil {
+			return fmt.Errorf("updateUrlWithOutbox: %w", updateErr)
 		}
 		alert := domain.NewAlertOutbox(
 			url.ID,
@@ -40,6 +41,10 @@ func (u *UpdateUrlWithOutbox) Execute(ctx context.Context, url domain.Url, input
 				Email: url.Contact,
 			},
 		)
-		return f.AlertOutbox().Save(alert)
+		saveErr := f.AlertOutbox().Save(ctx, alert)
+		if saveErr != nil {
+			return fmt.Errorf("updateUrlWithOutbox: %w", saveErr)
+		}
+		return nil
 	})
 }

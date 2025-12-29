@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log/slog"
 	"os"
 	"sync"
 
@@ -38,7 +37,12 @@ func main() {
 	}
 	db, openDBErr := database.OpenDB()
 	if openDBErr != nil {
-		slog.Error(openDBErr.Error())
+		logger.Error(
+			"failed to open database",
+			"main.go",
+			"main",
+			openDBErr,
+		)
 		os.Exit(1)
 	}
 	defer db.Close()

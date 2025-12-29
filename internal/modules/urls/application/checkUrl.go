@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -38,13 +39,13 @@ type CheckUrlResult struct {
 //
 // Erros retornados indicam falhas técnicas (timeout, DNS, etc).
 // Falhas HTTP (status >= 400) NÃO retornam erro, apenas IsSuccess=false.
-func (c *CheckUrl) Execute(url string) (CheckUrlResult, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+func (c *CheckUrl) Execute(ctx context.Context, url string) (CheckUrlResult, error) {
+	reqCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, _ := http.NewRequestWithContext(reqCtx, http.MethodGet, url, nil)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return CheckUrlResult{}, err
+		return CheckUrlResult{}, fmt.Errorf("checkUrl: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
