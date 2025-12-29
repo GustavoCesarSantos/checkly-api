@@ -14,12 +14,13 @@ import (
 	"time"
 
 	"GustavoCesarSantos/checkly-api/internal/shared/configs"
+	"GustavoCesarSantos/checkly-api/internal/shared/logger"
 )
 
-func Server(db *sql.DB) error {
+func Server(db *sql.DB, wg *sync.WaitGroup) error {
 	serverConfigs := configs.LoadServerConfig()
 	port := serverConfigs.Port
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	srvLogger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	routes := routes(db)
 	srv := &http.Server{
 		Addr:           fmt.Sprintf(":%d", port),
@@ -28,21 +29,41 @@ func Server(db *sql.DB) error {
 		ReadTimeout:    5 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
-		ErrorLog:       slog.NewLogLogger(logger.Handler(), slog.LevelError),
+		ErrorLog:       slog.NewLogLogger(srvLogger.Handler(), slog.LevelError),
 	}
 	shutdownError := make(chan error)
-	var wg sync.WaitGroup
-	go handleShutdown(srv, shutdownError, &wg)
-	slog.Info(fmt.Sprintf("starting server on :%d", port))
+	go handleShutdown(srv, shutdownError, wg)
+	logger.Info(
+		fmt.Sprintf("starting server on :%d", port),
+		"server.go",
+		"Server",
+	)
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
+		logger.Error(
+			"could not start server",
+			"server.go",
+			"Server",
+			err,
+		)
 		return err
 	}
 	err = <-shutdownError
 	if err != nil {
+		logger.Error(
+			"could not gracefully shutdown the server",
+			"server.go",
+			"Server",
+			err,
+		)
 		return err
 	}
-	slog.Info("stopped server", "addr", srv.Addr)
+	logger.Info(
+		"server stopped",
+		"server.go",
+		"Server",
+		"addr", srv.Addr,
+	)
 	return nil
 }
 
@@ -50,14 +71,24 @@ func handleShutdown(srv *http.Server, shutdownError chan error, wg *sync.WaitGro
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	s := <-quit
-	slog.Info("shutting down server", "signal", s.String())
+	logger.Info(
+		"shutting down server",
+		"server.go",
+		"handleShutdown",
+		"signal", s.String(),
+	)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	err := srv.Shutdown(ctx)
 	if err != nil {
 		shutdownError <- err
 	}
-	slog.Info("completing background tasks", "addr", srv.Addr)
+	logger.Info(
+		"completing background tasks",
+		"server.go",
+		"handleShutdown",
+		"addr", srv.Addr,
+	)
 	wg.Wait()
 	shutdownError <- nil
 }

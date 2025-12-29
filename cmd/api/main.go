@@ -3,9 +3,11 @@ package main
 import (
 	"log/slog"
 	"os"
+	"sync"
 
 	"GustavoCesarSantos/checkly-api/internal/infra/database"
 	http "GustavoCesarSantos/checkly-api/internal/infra/http"
+	"GustavoCesarSantos/checkly-api/internal/shared/logger"
 
 	"github.com/joho/godotenv"
 )
@@ -25,7 +27,12 @@ import (
 func main() {
 	if os.Getenv("LOAD_ENV_FILE") == "true" {
 		if err := godotenv.Load(); err != nil {
-			slog.Error("failed to load .env file", "error", err)
+			logger.Error(
+				"failed to load .env file",
+				"main.go",
+				"main",
+				err,
+			)
 			os.Exit(1)
 		}
 	}
@@ -35,10 +42,20 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	slog.Info("[API] Database connection pool established")
-	err := http.Server(db)
+	logger.Info(
+		"database connection pool established",
+		"main.go",
+		"main",
+	)
+	var wg sync.WaitGroup
+	err := http.Server(db, &wg)
 	if err != nil {
-		slog.Error(err.Error())
+		logger.Error(
+			"failed to start HTTP server",
+			"main.go",
+			"main",
+			err,
+		)
 		os.Exit(1)
 	}
 }
