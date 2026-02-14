@@ -13,23 +13,23 @@ import (
 )
 
 type NotifyCustomer struct {
-	fetchPendingAlerts		*application.FetchPendingAlerts
-	markSent                *application.MarkSent
-	sendEmail               *application.SendEmail
-	scheduleRetryAlert		*application.ScheduleRetryAlert
+	fetchPendingAlerts *application.FetchPendingAlerts
+	markSent           *application.MarkSent
+	sendEmail          *application.SendEmail
+	scheduleRetryAlert *application.ScheduleRetryAlert
 }
 
 func NewNotifyCustomer(
-	fetchPendingAlerts		*application.FetchPendingAlerts,
-	markSent                *application.MarkSent,
-	sendEmail				*application.SendEmail,
-	scheduleRetryAlert		*application.ScheduleRetryAlert,
+	fetchPendingAlerts *application.FetchPendingAlerts,
+	markSent *application.MarkSent,
+	sendEmail *application.SendEmail,
+	scheduleRetryAlert *application.ScheduleRetryAlert,
 ) *NotifyCustomer {
 	return &NotifyCustomer{
-		fetchPendingAlerts:		fetchPendingAlerts,
-		markSent:                markSent,
-		sendEmail:               sendEmail,
-		scheduleRetryAlert:      scheduleRetryAlert,
+		fetchPendingAlerts: fetchPendingAlerts,
+		markSent:           markSent,
+		sendEmail:          sendEmail,
+		scheduleRetryAlert: scheduleRetryAlert,
 	}
 }
 

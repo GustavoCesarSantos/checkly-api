@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"GustavoCesarSantos/checkly-api/internal/shared/logger"
 	"errors"
 	"fmt"
 	"net/http"
+
+	"GustavoCesarSantos/checkly-api/internal/shared/logger"
 )
 
 var (
@@ -22,24 +23,24 @@ type ErrorEnvelope struct {
 
 type MetadataErr struct {
 	Message string `json:"message" example:"detailed error message"`
-	Who string `json:"who" example:"module or component that raised the error"`
-	Where string `json:"where" example:"file and function where the error occurred"`
+	Who     string `json:"who" example:"module or component that raised the error"`
+	Where   string `json:"where" example:"file and function where the error occurred"`
 }
 
 func logError(r *http.Request, err error, metadataErr MetadataErr) {
 	var (
 		message = metadataErr.Message
-		who	= metadataErr.Who
-		where = metadataErr.Where
-		method = r.Method
-		url    = r.URL.RequestURI()
+		who     = metadataErr.Who
+		where   = metadataErr.Where
+		method  = r.Method
+		url     = r.URL.RequestURI()
 	)
 	logger.Error(
 		message,
 		who,
 		where,
 		err,
-		"method", method, 
+		"method", method,
 		"url", url,
 	)
 }

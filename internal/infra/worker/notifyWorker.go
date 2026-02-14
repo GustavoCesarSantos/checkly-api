@@ -14,10 +14,10 @@ import (
 )
 
 type NotifyWorker struct {
-	interval time.Duration
-	concurrency int
+	interval       time.Duration
+	concurrency    int
 	notifyCustomer *urls.NotifyCustomer
-	running		chan struct{}
+	running        chan struct{}
 }
 
 func NewNotifyWorker(sqlDB *sql.DB, concurrency int) *NotifyWorker {
@@ -31,9 +31,9 @@ func NewNotifyWorker(sqlDB *sql.DB, concurrency int) *NotifyWorker {
 	)
 	alertRepo := db.NewAlertOutboxRepository(sqlDB)
 	return &NotifyWorker{
-		interval: 1 * time.Minute,
+		interval:    1 * time.Minute,
 		concurrency: concurrency,
-		running: make(chan struct{}, 1),
+		running:     make(chan struct{}, 1),
 		notifyCustomer: urls.NewNotifyCustomer(
 			application.NewFetchPendingAlerts(alertRepo),
 			application.NewMarkSent(alertRepo),
@@ -51,7 +51,7 @@ func (w *NotifyWorker) Start(ctx context.Context) {
 		"Notify worker started",
 		"notifyWorker.go",
 		"Start",
-		"interval", w.interval.String(), 
+		"interval", w.interval.String(),
 		"concurrency", w.concurrency,
 	)
 	for {

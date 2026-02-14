@@ -12,8 +12,8 @@ import (
 
 type sentAlerts struct {
 	IdempotencyKey string
-	Status domain.AlertStatus
-	SentAt *time.Time
+	Status         domain.AlertStatus
+	SentAt         *time.Time
 }
 
 type sentAlertsRepository struct {

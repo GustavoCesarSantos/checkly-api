@@ -7,11 +7,11 @@ import (
 )
 
 type MailerConfig struct {
-	Host        string
-	Port		int
-	Username	string
-	Password	string
-	Sender 		string
+	Host     string
+	Port     int
+	Username string
+	Password string
+	Sender   string
 }
 
 func LoadMailerConfig() MailerConfig {
@@ -21,10 +21,10 @@ func LoadMailerConfig() MailerConfig {
 		os.Exit(1)
 	}
 	return MailerConfig{
-		Host:        GetEnv("MAILER_HOST", "localhost"),
-		Port:        port,
-		Username:    GetEnv("MAILER_USERNAME", ""),
-		Password:    GetEnv("MAILER_PASSWORD", ""),
-		Sender:      GetEnv("MAILER_SENDER", ""),
+		Host:     GetEnv("MAILER_HOST", "localhost"),
+		Port:     port,
+		Username: GetEnv("MAILER_USERNAME", ""),
+		Password: GetEnv("MAILER_PASSWORD", ""),
+		Sender:   GetEnv("MAILER_SENDER", ""),
 	}
 }

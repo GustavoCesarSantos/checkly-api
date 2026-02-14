@@ -17,7 +17,7 @@ func NewSendEmail(mailer mailer.Mailer) *SendEmail {
 
 func (s *SendEmail) Execute(payload domain.Payload) error {
 	data := map[string]any{
-		"url":          payload.Url,
+		"url": payload.Url,
 	}
 	err := s.mailer.Send(payload.Email, "alert_url_down.tmpl", data)
 	if err != nil {

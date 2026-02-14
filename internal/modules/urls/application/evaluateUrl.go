@@ -30,7 +30,6 @@ func NewEvaluateUrl() *EvaluateUrl {
 	return &EvaluateUrl{}
 }
 
-
 // Execute avalia o estado atual da URL e o resultado do check HTTP,
 // aplicando as regras de transição de estado.
 //
@@ -68,7 +67,7 @@ func (e *EvaluateUrl) Execute(url *domain.Url, httpOK bool) error {
 		if url.StabilityCount >= 3 {
 			url.Status = domain.StatusHealthy
 			url.StabilityCount = 0
-		} else {		
+		} else {
 			url.StabilityCount++
 		}
 		return nil

@@ -71,7 +71,7 @@ func TestSaveUrl_Execute_Degraded(t *testing.T) {
 		Contact:    "admin@example.com",
 	}
 	now := time.Now()
-	url, err := sut.Execute(context.Background(),input, false)
+	url, err := sut.Execute(context.Background(), input, false)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

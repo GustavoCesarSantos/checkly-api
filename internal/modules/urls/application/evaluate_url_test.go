@@ -33,8 +33,8 @@ func TestEvaluateUrl_DegradedToRecovering_WhenHttpOk(t *testing.T) {
 
 func TestEvaluateUrl_RecoveringToHealthy_AfterThreeSuccesses(t *testing.T) {
 	url := &domain.Url{
-		Status:          domain.StatusRecovering,
-		StabilityCount:  2,
+		Status:         domain.StatusRecovering,
+		StabilityCount: 2,
 	}
 	sut := NewEvaluateUrl()
 	sut.Execute(url, true)
@@ -63,9 +63,9 @@ func TestEvaluateUrl_RecoveringToDegraded_WhenHttpFails(t *testing.T) {
 
 func TestEvaluateUrl_DegradedToDown_WhenRetryLimitReached(t *testing.T) {
 	url := &domain.Url{
-		Status:      domain.StatusDegraded,
-		RetryCount:  3,
-		RetryLimit:  3,
+		Status:     domain.StatusDegraded,
+		RetryCount: 3,
+		RetryLimit: 3,
 	}
 	sut := NewEvaluateUrl()
 	sut.Execute(url, false)
@@ -79,9 +79,9 @@ func TestEvaluateUrl_DegradedToDown_WhenRetryLimitReached(t *testing.T) {
 
 func TestEvaluateUrl_DegradedRetryIncrement_WhenBelowLimit(t *testing.T) {
 	url := &domain.Url{
-		Status:      domain.StatusDegraded,
-		RetryCount:  1,
-		RetryLimit:  3,
+		Status:     domain.StatusDegraded,
+		RetryCount: 1,
+		RetryLimit: 3,
 	}
 	sut := NewEvaluateUrl()
 	sut.Execute(url, false)

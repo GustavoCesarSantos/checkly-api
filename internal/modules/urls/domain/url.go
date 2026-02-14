@@ -20,8 +20,8 @@ type Url struct {
 	Interval       int
 	RetryLimit     int
 	RetryCount     int
-	DownCount	   int
-	WentDownNow	   bool
+	DownCount      int
+	WentDownNow    bool
 	StabilityCount int
 	Contact        string
 	NextCheck      *time.Time

@@ -14,11 +14,11 @@ import (
 )
 
 type MonitorUrls struct {
-	checkUrl      *application.CheckUrl
-	evaluateUrl   *application.EvaluateUrl
-	fetchUrls *application.FetchUrls
-	scheduleNextCheck *application.ScheduleNextCheck
-	updateUrl     *application.UpdateUrl
+	checkUrl            *application.CheckUrl
+	evaluateUrl         *application.EvaluateUrl
+	fetchUrls           *application.FetchUrls
+	scheduleNextCheck   *application.ScheduleNextCheck
+	updateUrl           *application.UpdateUrl
 	updateUrlWithOutbox *application.UpdateUrlWithOutbox
 }
 
@@ -31,11 +31,11 @@ func NewMonitorUrls(
 	updateUrlWithOutbox *application.UpdateUrlWithOutbox,
 ) *MonitorUrls {
 	return &MonitorUrls{
-		checkUrl:      checkUrl,
-		evaluateUrl:   evaluateUrl,
-		fetchUrls:     fetchUrls,
-		scheduleNextCheck: scheduleNextCheck,
-		updateUrl:     updateUrl,
+		checkUrl:            checkUrl,
+		evaluateUrl:         evaluateUrl,
+		fetchUrls:           fetchUrls,
+		scheduleNextCheck:   scheduleNextCheck,
+		updateUrl:           updateUrl,
 		updateUrlWithOutbox: updateUrlWithOutbox,
 	}
 }
@@ -118,7 +118,7 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 				updateErr := m.updateUrlWithOutbox.Execute(urlCtx, *u, dtos.UpdateUrlRequest{
 					NextCheck:      u.NextCheck,
 					RetryCount:     &u.RetryCount,
-					DownCount:		&u.DownCount,
+					DownCount:      &u.DownCount,
 					StabilityCount: &u.StabilityCount,
 					Status:         &u.Status,
 				})
@@ -137,7 +137,7 @@ func (m *MonitorUrls) Handle(ctx context.Context, concurrency int) error {
 			updateErr := m.updateUrl.Execute(urlCtx, u.ID, dtos.UpdateUrlRequest{
 				NextCheck:      u.NextCheck,
 				RetryCount:     &u.RetryCount,
-				DownCount:		&u.DownCount,
+				DownCount:      &u.DownCount,
 				StabilityCount: &u.StabilityCount,
 				Status:         &u.Status,
 			})

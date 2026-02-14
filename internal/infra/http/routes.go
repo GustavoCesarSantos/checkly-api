@@ -18,13 +18,13 @@ import (
 
 func routes(sqlDB *sql.DB) http.Handler {
 	urlRepository := db.NewUrlRepository(sqlDB)
-	
+
 	checkUrl := application.NewCheckUrl()
 	saveUrl := application.NewSaveUrl(urlRepository)
-	
+
 	createUrl := urls.NewCreateUrl(checkUrl, saveUrl)
 	healthcheck := monitor.NewHealthcheck()
-	
+
 	router := httprouter.New()
 
 	metadataErr := utils.MetadataErr{

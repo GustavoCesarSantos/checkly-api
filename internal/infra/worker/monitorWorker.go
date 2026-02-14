@@ -16,7 +16,7 @@ type MonitorWorker struct {
 	interval    time.Duration
 	concurrency int
 	monitor     *urls.MonitorUrls
-	running		chan struct{}
+	running     chan struct{}
 }
 
 func NewMonitorWorker(sqlDB *sql.DB, concurrency int) *MonitorWorker {
@@ -25,7 +25,7 @@ func NewMonitorWorker(sqlDB *sql.DB, concurrency int) *MonitorWorker {
 	return &MonitorWorker{
 		interval:    1 * time.Minute,
 		concurrency: concurrency,
-		running: make(chan struct{}, 1),
+		running:     make(chan struct{}, 1),
 		monitor: urls.NewMonitorUrls(
 			application.NewCheckUrl(),
 			application.NewEvaluateUrl(),
@@ -45,7 +45,7 @@ func (w *MonitorWorker) Start(ctx context.Context) {
 		"Monitor worker started",
 		"monitorWorker.go",
 		"Start",
-		"interval", w.interval.String(), 
+		"interval", w.interval.String(),
 		"concurrency", w.concurrency,
 	)
 	for {
